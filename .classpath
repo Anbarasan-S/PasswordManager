@@ -8,5 +8,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="/home/anbu/Downloads/commons-codec-1.14.jar"/>
 	<classpathentry kind="lib" path="/home/anbu/Downloads/mysql-connector-java-8.0.17.jar"/>
+	<classpathentry kind="lib" path="/home/anbu/Desktop/activation.jar"/>
+	<classpathentry kind="lib" path="/home/anbu/Desktop/mail.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

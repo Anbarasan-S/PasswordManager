@@ -3,14 +3,14 @@ package com.password_manager.main;
 import java.util.Scanner;
 
 import com.password_manager.dao.EmployeeDAO;
-import com.password_manager.employee.Employee;
+import com.password_manager.user.User;
 
 public class Login
 {
-	public  Employee verifyCredentials()
+	public  User verifyCredentials()
     {
         Scanner sc=new Scanner(System.in);
-        Employee emp;
+        User emp;
         String user_name,master_password;
             System.out.println("Enter your username: ");
             user_name=sc.next();
