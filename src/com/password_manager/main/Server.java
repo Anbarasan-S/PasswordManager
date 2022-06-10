@@ -1,9 +1,8 @@
 package com.password_manager.main;
 
+import java.util.List;
 import java.util.Scanner;
 
-import com.password_manager.Password.*;
-import com.password_manager.dao.EmployeeDAO;
 import com.password_manager.user.User;
 public class Server 
 {
@@ -37,7 +36,7 @@ public class Server
 		
 		while(true&&user.getRole()==1)
 		{
-			System.out.println("1.Add user 2.Add multiple users 3.Remove User 4.Exit");
+			System.out.println("1.Add user 2.Add password 3.Remove User 4.Exit");
 			option=sc.nextInt();
 			if(option==1)
 			{
@@ -54,17 +53,49 @@ public class Server
 			}
 			else if(option==2)
 			{
-				
+			    boolean added=user.addPassword();
+			    if(added)
+			    {
+			    	System.out.println("Password added successfully");
+			    }
+			    else 
+			    {
+			    	System.out.println("Sorry we couldn't add the password");
+			    }
 			}
 			else if(option==3)
 			{
-				System.out.println("Enter the user name of the employee to remove");
-				String user_name=sc.next();
-				user.removeUser(user_name);	
+				List<User>lst_usr=user.viewUsers();
+				if(lst_usr.size()!=0)
+				{
+					System.out.println("Enter the row number of the user to remove");
+					int user_id=sc.nextInt();					
+				}
+				else
+				{
+					System.out.println("Sorry no users found");
+				}
 			}
 			else if(option==4)
 			{
 				System.exit(0);
+			}
+		}
+		while(true&&user.getRole()==4)
+		{
+			System.out.println("1.Add password 2.Show Password ");
+			option=sc.nextInt();
+			if(option==1)
+			{
+				boolean added=user.addPassword();
+				if(added)
+				{
+					System.out.println("Password added successfully");
+				}
+				else
+				{
+					System.out.println("Sorry we couldn't add the password");
+				}
 			}
 		}
 	}

@@ -4,9 +4,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Base64;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Hex;
 
+import com.password_manager.Password.Password;
 import com.password_manager.email.EmailServer;
 import com.password_manager.main.MethodKeeper;
 import com.password_manager.organisation.Organisation;
@@ -51,6 +53,14 @@ public class EmployeeDAO
 		ps.setString(2,hashed_password);
 		ps.setInt(3, role);
 		ps.executeUpdate();
+		
+		//getting the user id and setting it to the user
+		query="SELECT last_insert_id()";
+		ps=con.prepareStatement(query);
+	  ResultSet rs=ps.executeQuery();
+		int user_id=rs.getInt("user_id");
+		user.setUser_id(user_id);
+		con.commit();
 		con.setAutoCommit(true);
 		return true;
 		}
@@ -83,6 +93,43 @@ public class EmployeeDAO
 		}
 	}
 	
+	public boolean removeUser(String user_name)
+	{
+		try
+		{
+			con.setAutoCommit(false);
+		
+			//Deleting the password not owned by the user
+			query="DELETE FROM Password where user_id=(SELECT user_id FROM User WHERE email=?) AND is_own=0";
+			ps=con.prepareStatement(query);
+			ps.setString(1, user_name);
+			ps.executeUpdate();
+
+			//Removing the user from the team member table
+			query="DELETE FROM TeamMember WHERE team_member_id=(SELECT user_id FROM User WHERE email=?";
+			ps=con.prepareStatement(query);
+			ps.setString(1,user_name);
+			
+			
+			//Setting status of the user to inactive and removing the user from the org
+			query="UPDATE User set status=? where user_name=?,set org_id=null,set team_id=null";
+			ps=con.prepareStatement(query);
+			ps.setInt(1, 2);
+			ps.setString(2,user_name);
+			ps.executeUpdate();
+			con.commit();
+				
+			con.setAutoCommit(true);
+			System.out.println("All the password and data of the "+user_name+" related with the organisation has deleted successfully and the user's account will be permanently deleted after 5 days");
+			return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Problem in removing the user "+ex.getMessage());
+			return false;
+		}
+	}
+	
 	public boolean userExists(String user_name,int org_id)
 	{
 		try
@@ -105,6 +152,50 @@ public class EmployeeDAO
 			return true;
 		}
 	}
+	
+	public boolean addPassword(Password password_data,User user)
+	{
+		try
+		{
+			
+		String site_name=password_data.getSite_name(),site_url=password_data.getSite_url(),site_password=password_data.getSite_password(),site_username=password_data.getSite_user_name();
+		site_url=site_url.length()==0?null:site_url;
+		
+		query="Insert into Password(user_id,site_name,site_user_name,site_password,site_url,is_own) VALUES(?,?,?,?,?,?)";
+		ps=con.prepareStatement(query);
+		ps.setInt(1,user.getUser_id());
+		ps.setString(2, site_name);
+		ps.setString(3, site_username);
+		ps.setString(4, site_password);
+		ps.setString(5, site_url);
+		ps.setInt(6,1);
+		ps.executeUpdate();
+		return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in add password method of empdao "+ex.getMessage());
+			return false;
+		}
+	}
+	
+	public ResultSet viewUsers(User user)
+	{
+		try
+		{
+		query="SELECT*FROM User where org_id=? ORDER BY user_id";
+		ps=con.prepareStatement(query);
+		ps.setInt(1, user.getOrg_id());
+		ResultSet rs=ps.executeQuery();
+		return rs;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in viewUsers of dao object "+ex.toString());
+			return null;
+		}
+	}
+	
 	
 	public static String getOrgName(int org_id) throws Exception
 	{
@@ -176,6 +267,7 @@ public class EmployeeDAO
 		{
 			 return false;
 		}
+		
 	//verifying if the password in the db matches the secret_token provided by the user
 		if(rs.getString("invitee_token").equals(secret_token))
 		{
@@ -203,13 +295,14 @@ public class EmployeeDAO
 		String hashed_password=rs.getString("master_password");
 		byte[] salt=Hex.decodeHex(hashed_password.split(":")[1]);
 		String original_hashed_password=MethodKeeper.hashPassword(original_password,salt);
-		
+		int user_id;
 		
 		if(original_hashed_password.equals(hashed_password))
 		{
 			String user_role=rs.getString("user_role");
 			int org_id=rs.getInt("org_id");
 			user_name=rs.getString("email");
+			user_id=rs.getInt("user_id");
 			String public_key=rs.getString("public_key");
 			String private_key=rs.getString("private_key");
 			
@@ -219,6 +312,7 @@ public class EmployeeDAO
 			retrived_user.setUser_name(user_name);
 			retrived_user.setRole(MethodKeeper.getRole(user_role));
 			retrived_user.setPublic_key(public_key);
+			retrived_user.setUser_id(user_id);
 			return retrived_user;
 		}
 		return null;
@@ -254,7 +348,11 @@ public class EmployeeDAO
 			ps.setString(5,user.getPublic_key());
 			ps.setString(6,user.getPrivate_key());
 			ps.executeUpdate();
-			
+			query="SELECT last_insert_id()";
+			ps=con.prepareStatement(query);
+		  ResultSet rs=ps.executeQuery();
+			int user_id=rs.getInt("user_id");
+			user.setUser_id(user_id);
 			query="DELETE FROM PASSWORD_MANAGER.Invitees where invitee_email=?";				
 			ps=con.prepareStatement(query);
 			ps.setString(1,user.getUser_name());
@@ -283,6 +381,7 @@ public class EmployeeDAO
 				return false;
 			}
 		
+			con.setAutoCommit(false);
 			query="INSERT into  User(email,master_password,user_role,public_key,private_key) VALUES(?,?,?,?,?)";
 			ps=con.prepareStatement(query);
 			ps.setString(1, user.getUser_name().toLowerCase());
@@ -291,7 +390,13 @@ public class EmployeeDAO
 			ps.setString(4,user.getPublic_key());
 			ps.setString(5,user.getPrivate_key());
 			ps.executeUpdate();
-			
+			query="SELECT last_insert_id()";
+			ps=con.prepareStatement(query);
+		  ResultSet rs=ps.executeQuery();
+			int user_id=rs.getInt("user_id");
+			user.setUser_id(user_id);
+			con.commit();
+			con.setAutoCommit(true);
 			return true;
 		}
 		catch(Exception ex)

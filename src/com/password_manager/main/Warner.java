@@ -31,4 +31,9 @@ public class Warner
 		}
 		return false;
 	}
+	
+	public static void requiredWarning(String field)
+	{
+		System.out.println("The "+field+" field is required. ");
+	}
 }
