@@ -3,7 +3,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Hex;
@@ -93,34 +95,34 @@ public class EmployeeDAO
 		}
 	}
 	
-	public boolean removeUser(String user_name)
+	public boolean removeUser(int user_id)
 	{
 		try
 		{
 			con.setAutoCommit(false);
 		
 			//Deleting the password not owned by the user
-			query="DELETE FROM Password where user_id=(SELECT user_id FROM User WHERE email=?) AND is_own=0";
+			query="DELETE FROM Password where user_id=? AND is_own=?";
 			ps=con.prepareStatement(query);
-			ps.setString(1, user_name);
+			ps.setInt(1,user_id);
+			ps.setInt(2, 0);
 			ps.executeUpdate();
-
 			//Removing the user from the team member table
-			query="DELETE FROM TeamMember WHERE team_member_id=(SELECT user_id FROM User WHERE email=?";
+			query="DELETE FROM TeamMember WHERE team_member_id=?";
 			ps=con.prepareStatement(query);
-			ps.setString(1,user_name);
-			
-			
+			ps.setInt(1,user_id);
+			ps.executeUpdate();
 			//Setting status of the user to inactive and removing the user from the org
-			query="UPDATE User set status=? where user_name=?,set org_id=null,set team_id=null";
+			query="UPDATE User set status=?,org_id=?,team_id=? where user_id=?";
 			ps=con.prepareStatement(query);
-			ps.setInt(1, 2);
-			ps.setString(2,user_name);
+			ps.setInt(1,2);
+			ps.setString(2,null);
+			ps.setString(3,null);
+			ps.setInt(4, user_id);
 			ps.executeUpdate();
 			con.commit();
 				
 			con.setAutoCommit(true);
-			System.out.println("All the password and data of the "+user_name+" related with the organisation has deleted successfully and the user's account will be permanently deleted after 5 days");
 			return true;
 		}
 		catch(Exception ex)
@@ -179,13 +181,38 @@ public class EmployeeDAO
 		}
 	}
 	
+	public List<Password> showPassword(int user_id) throws Exception
+	{
+		query="SELECT* from Password where user_id=?";
+		ps=con.prepareStatement(query);
+		ps.setInt(1,user_id);
+		ResultSet rs=ps.executeQuery();
+		List<Password> lst_password=new ArrayList<>();
+		while(rs.next())
+		{
+			Password temp_password=new Password();
+			temp_password.setPass_id(rs.getInt("pass_id"));
+			temp_password.setOwner_pass_id(rs.getInt("owner_pass_id"));
+			temp_password.setSite_name(rs.getString("site_name"));
+			temp_password.setChanged_by_id(rs.getInt("changed_by_id"));
+			temp_password.setSite_url(rs.getString("site_url"));
+			temp_password.setSite_password(rs.getString("site_password"));
+			temp_password.setUser_id(rs.getInt("user_id"));
+			temp_password.setIs_own(rs.getInt("is_own"));
+			temp_password.setCreated_at(rs.getDate("created_at"));
+			lst_password.add(temp_password);
+		}
+		return lst_password;
+	}
+	
 	public ResultSet viewUsers(User user)
 	{
 		try
 		{
-		query="SELECT*FROM User where org_id=? ORDER BY user_id";
+		query="SELECT*FROM User where org_id=? and NOT(user_id=?) ORDER BY user_id";
 		ps=con.prepareStatement(query);
 		ps.setInt(1, user.getOrg_id());
+		ps.setInt(2, user.getUser_id());
 		ResultSet rs=ps.executeQuery();
 		return rs;
 		}
@@ -233,17 +260,21 @@ public class EmployeeDAO
 				System.out.println("The user was already a part of an organisation. Try adding other users");
 				return;
 			}
+			
+			con.setAutoCommit(false);
+			int otp=1000+(int)(Math.random()*((9999-1000)+1));
+			String invite_token=otp+":"+user.getOrg_id();
+			invite_token=new String(Base64.getEncoder().encode(invite_token.getBytes()));
+			String message="Invite from "+user.getUser_name()+" to join the organisation "+ EmployeeDAO.getOrgName(user.getOrg_id())+ " \nSECRET TOKEN: "+invite_token;
+            EmailServer.sendMail(user_email,"Password Manager Verification",message);
 			query="INSERT INTO Invitees(inviter_org_id,invitee_token,invitee_email) VALUES(?,?,?)";
 			ps=con.prepareStatement(query);
-			 int otp=1000+(int)(Math.random()*((9999-1000)+1));
-		     String invite_token=otp+":"+user.getOrg_id();
-		     invite_token=new String(Base64.getEncoder().encode(invite_token.getBytes()));
 			ps.setInt(1,user.getOrg_id());
 			ps.setString(2,invite_token);
 			ps.setString(3,user_email);
 			ps.executeUpdate();
-			String message="Invite from "+user.getUser_name()+" to join the organisation "+ EmployeeDAO.getOrgName(user.getOrg_id())+ " \nSECRET TOKEN: "+invite_token;
-            EmailServer.sendMail(user_email,"Password Manager Verification",message);
+			con.commit();
+			con.setAutoCommit(true);
 		}
 		catch(Exception ex)
 		{
@@ -303,8 +334,16 @@ public class EmployeeDAO
 			int org_id=rs.getInt("org_id");
 			user_name=rs.getString("email");
 			user_id=rs.getInt("user_id");
+			String status=rs.getString("status");
 			String public_key=rs.getString("public_key");
 			String private_key=rs.getString("private_key");
+			
+			
+			if(status=="inactive")
+			{
+				System.out.println("Your account is inactive and you can't login.");
+				return null;
+			}
 			
 			System.out.println("Login Successful");
 			User retrived_user=new User();
@@ -338,7 +377,6 @@ public class EmployeeDAO
 			}
 			
 			con.setAutoCommit(false);
-			
 			query="INSERT into User (email,master_password,user_role,org_id,public_key,private_key) VALUES(?,?,?,?,?,?)";
 			ps=con.prepareStatement(query);
 			ps.setString(1, user.getUser_name().toLowerCase());
@@ -351,7 +389,8 @@ public class EmployeeDAO
 			query="SELECT last_insert_id()";
 			ps=con.prepareStatement(query);
 		  ResultSet rs=ps.executeQuery();
-			int user_id=rs.getInt("user_id");
+		  rs.next();
+			int user_id=rs.getInt("last_insert_id()");
 			user.setUser_id(user_id);
 			query="DELETE FROM PASSWORD_MANAGER.Invitees where invitee_email=?";				
 			ps=con.prepareStatement(query);
@@ -364,6 +403,7 @@ public class EmployeeDAO
 		}
 		catch(Exception ex)
 		{
+			user=null;
 			System.out.println("Exception "+ex.getMessage());
 			return false;
 		}

@@ -1,12 +1,9 @@
 package com.password_manager.email;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -29,14 +26,14 @@ public class EmailServer
 	props.put("mail.smtp.host","smtp.gmail.com");
 	props.put("mail.smtp.port", "587");
 	props.put("mail.smtp.ssl.protocols", "TLSv1.2");
-	
-	
+
 	   Session session = Session.getDefaultInstance(props,  
-			    new javax.mail.Authenticator() {  
+			    new javax.mail.Authenticator() { 
 			      protected PasswordAuthentication getPasswordAuthentication() {  
 			    return new PasswordAuthentication(sender,password);  
 			      }  
-			    });  
+	   });  
+
 			    try 
 			    {  
 			    	

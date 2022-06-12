@@ -59,7 +59,11 @@ public class MethodKeeper
 	
 	public static void showUserDetails(User user)
 	{	
-		System.out.println("User-name: "+user.getUser_name()+"\n Role: "+MethodKeeper.getRoleAsString(user.getRole())+"\n Team: "+user.getTeam_name());
+		System.out.println("User-name: "+user.getUser_name()+"\n Role: "+MethodKeeper.getRoleAsString(user.getRole()));
+		if(user.getTeam_name()!=null)
+		{
+			System.out.println(" Team Name: "+user.getTeam_name());
+		}
 	}
 	
 	public static String getRoleAsString(int role_enum)
@@ -118,8 +122,6 @@ public class MethodKeeper
 	
 	public static String autoGeneratePassword()
 	{
-		
-
         char upper_case[]=new char[26];
         char lower_case[]=new char[26];
         for(int i=0;i<26;i++)

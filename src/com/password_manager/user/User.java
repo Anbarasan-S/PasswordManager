@@ -14,15 +14,15 @@ import com.password_manager.main.MethodKeeper;
 
 public class User 
 {
-	 private String user_name,master_password,private_key,public_key;
+	 private String user_name,master_password,private_key,public_key,team_name;
 	 private PBEKeySpec pbe_key_spec=null;
 	 private SecretKeyFactory secret_key_factor=null;
-	  private int pass_id[]=new int[1000],org_id,role,user_id,team_id,team_name;
-	  public int getTeam_name() {
+     private int pass_id[]=new int[1000],org_id,role,user_id,team_id;
+	  public String getTeam_name() {
 		return team_name;
 	}
 
-	public void setTeam_name(int team_name) {
+	public void setTeam_name(String team_name) {
 		this.team_name = team_name;
 	}
 
@@ -38,22 +38,62 @@ public class User
 	        emp_dao=new EmployeeDAO();
 	    }
 	   
-	   public void removeUser(String user_name)
+	   public void removeUser(List<User>lst_usr,String remove_users_data)
 	   {
-		   if(this.getUser_name()==user_name)
+		   String data[]=remove_users_data.split(" ");
+		   List<User> removed_users=new ArrayList<>();
+		   for(String row:data)
 		   {
-			   System.out.println("You cannot remove your account. Instead try the delete account option");
-			   return;
+			   int row_num=Integer.parseInt(row),size=lst_usr.size();
+			   if(row_num<0||row_num>size)
+			   {
+				   System.out.println("Invalid row number "+row_num+" and that row number is ignored");
+			   }
+			   else
+			   {
+				   User temp_user=lst_usr.get(row_num-1);
+				   boolean is_removed=emp_dao.removeUser(temp_user.getUser_id());
+				   if(is_removed)
+				   {
+					   removed_users.add(temp_user);
+				   }
+				   else
+				   {
+					   System.out.println("Cannot remvoe the  user with the username "+temp_user.getUser_name());					   
+				   }
+			   }
 		   }
-		   if(!emp_dao.userExists(user_name,org_id))
+		   if(removed_users.size()!=0) 
+		{
+		   System.out.println("The following users are removed successfully from the org and their account will permanently deleted after 5 days: ");
+		   for(int ind=0;ind<removed_users.size();ind++)
 		   {
-			   System.out.println("Sorry the user does not exists in your organisation");
-			   return;
+			  System.out.println(ind+1+".) "+removed_users.get(ind).getUser_name()); 
 		   }
-		   emp_dao.removeUser(user_name);
-		   
+        }
 	   }
 	   
+	  public void showPassword()
+	  {
+		  try
+		  {
+			 List<Password>lst_password=emp_dao.showPassword(this.user_id);
+			 int ind=1;   
+			 for(Password pass:lst_password)
+			 {
+				 if(pass.getSite_url().length()==0)
+				 {
+					 pass.setSite_url("-");
+				 }
+				 System.out.println(ind+".) Name: "+pass.getSite_name()+" Password: "+pass.getSite_password()+" Url: "+pass.getSite_url())
+			 }
+		  }
+		  catch(Exception ex)
+		  {
+			  System.out.println("Trouble getting the password "+ex);
+		  }
+	  }
+	  
 	   public boolean addPassword()
 	   {
 		  Password password_data=MethodKeeper.receivePasswordDetails();
@@ -70,6 +110,7 @@ public class User
 	    public void addEmployee(User emp,String user_email_id) throws Exception
 	    {
 	        emp_dao.addInviteUser(user_email_id, emp);
+	       
 	    }
 	    
 		public String getUser_name() {

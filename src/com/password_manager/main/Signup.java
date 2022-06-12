@@ -72,8 +72,26 @@ public void sendOtp(String user_name)
             {
             	receiveCredentials();
             }
-            System.out.println("Enter your master password: ");
+            System.out.println("Enter your master password (Note - The master password must atleast contains 10 characters \"\n"
+            		+ "	 and should contain one special character one lower case character one upper case character and one digit :) ");
             master_password=sc.next();
+            while(Warner.warnPassword(master_password))
+            {
+            	System.out.println("Choose an option: 1. Enter your master password again 2. Return to main menu");
+            	int opt=sc.nextInt();
+            	if(opt==1)
+            	{
+            		System.out.println("Enter your master password: ");
+            		master_password=sc.next();
+                    System.out.println("Re-Enter your master password: ");
+                    verify_password=sc.next();
+            	}
+            	else if(opt==2)
+            	{
+            		//Show main menu
+            		return;
+            	}
+            }
             System.out.println("Re-Enter your master password: ");
             verify_password=sc.next();
             while(!verify_password.equals(master_password))
@@ -93,23 +111,6 @@ public void sendOtp(String user_name)
                     verify_password=sc.next();	
             	}
             	else if(opt==3)
-            	{
-            		//Show main menu
-            		return;
-            	}
-            }
-            while(Warner.warnPassword(master_password))
-            {
-            	System.out.println("Choose an option: 1. Enter your master password again 2. Return to main menu");
-            	int opt=sc.nextInt();
-            	if(opt==1)
-            	{
-            		System.out.println("Enter your master password: ");
-            		master_password=sc.next();
-                    System.out.println("Re-Enter your master password: ");
-                    verify_password=sc.next();
-            	}
-            	else if(opt==2)
             	{
             		//Show main menu
             		return;
@@ -163,6 +164,7 @@ public void sendOtp(String user_name)
             	   break;            	   
                }
             	}while(true);
+            	System.out.println("Verification successful");
             }
             catch(Exception ex)
             {
@@ -170,11 +172,28 @@ public void sendOtp(String user_name)
             	return;
             }
             
-            System.out.println("Enter your master password: ");
+            System.out.println("Enter your master password (Note - The master password must atleast contains 10 characters \"\n"
+            		+ "	 and should contain one special character one lower case character one upper case character and one digit :) ");
             master_password=sc.next();
-            System.out.println("Re-enter your master password: ");
+            while(Warner.warnPassword(master_password))
+            {
+            	System.out.println("Choose an option: 1. Enter your master password again 2. Return to main menu");
+            	int opt=sc.nextInt();
+            	if(opt==1)
+            	{
+            		System.out.println("Enter your master password: ");
+            		master_password=sc.next();
+                    System.out.println("Re-Enter your master password: ");
+                    verify_password=sc.next();
+            	}
+            	else if(opt==2)
+            	{
+            		//Show main menu
+            		return;
+            	}
+            }
+            System.out.println("Re-Enter your master password: ");
             verify_password=sc.next();
-            
             while(!verify_password.equals(master_password))
             {
             	Warner.notMatch();
@@ -197,27 +216,14 @@ public void sendOtp(String user_name)
             		return;
             	}
             }
-            
-            while(Warner.warnPassword(master_password))
-            {
-            	int opt=sc.nextInt();
-            	if(opt==1)
-            	{
-            		System.out.println("Enter your master password: ");
-            		master_password=sc.next();
-                    System.out.println("Re-Enter your master password: ");
-                    verify_password=sc.next();
-            	}
-            	else if(opt==2)
-            	{
-            		//Show main menu
-            		return;
-            	}
-            }	
             new_user=new User(user_name,4,master_password);
             new_user.setOrg_id(org_id);
            
-            empDao.createEmployee(new_user);
+            boolean created=empDao.createEmployee(new_user);
+            if(!created)
+            {
+            	new_user=null;
+            }
         }
         else if(inp==3)
         {

@@ -36,7 +36,7 @@ public class Server
 		
 		while(true&&user.getRole()==1)
 		{
-			System.out.println("1.Add user 2.Add password 3.Remove User 4.Exit");
+			System.out.println("1.Add user 2.Remove User 3.Add password 4.Show passwords 5.Exit");
 			option=sc.nextInt();
 			if(option==1)
 			{
@@ -53,6 +53,21 @@ public class Server
 			}
 			else if(option==2)
 			{
+				List<User>lst_usr=user.viewUsers();
+				if(lst_usr.size()!=0)
+				{
+					System.out.println("Enter the row numbers of the user to remove, To remove multiple users seperate the row number with spaces:(1 10 20)");
+					sc.nextLine();
+					String user_ids=sc.nextLine();					
+					user.removeUser(lst_usr,user_ids);
+				}
+				else
+				{
+					System.out.println("Oops! no users found in your organisation. Try adding users to your organisation.");
+				}
+			}
+			else if(option==3)
+			{
 			    boolean added=user.addPassword();
 			    if(added)
 			    {
@@ -63,24 +78,18 @@ public class Server
 			    	System.out.println("Sorry we couldn't add the password");
 			    }
 			}
-			else if(option==3)
-			{
-				List<User>lst_usr=user.viewUsers();
-				if(lst_usr.size()!=0)
-				{
-					System.out.println("Enter the row number of the user to remove");
-					int user_id=sc.nextInt();					
-				}
-				else
-				{
-					System.out.println("Sorry no users found");
-				}
-			}
 			else if(option==4)
+			{
+				user.showPassword();
+			}
+			else if(option==5)
 			{
 				System.exit(0);
 			}
+			
 		}
+		
+		
 		while(true&&user.getRole()==4)
 		{
 			System.out.println("1.Add password 2.Show Password ");
@@ -96,6 +105,10 @@ public class Server
 				{
 					System.out.println("Sorry we couldn't add the password");
 				}
+			}
+			else if(option==2)
+			{
+				user.showPassword();
 			}
 		}
 	}
