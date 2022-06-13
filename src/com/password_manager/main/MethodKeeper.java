@@ -27,6 +27,7 @@ import javax.mail.internet.InternetAddress;
 import org.apache.commons.codec.binary.Hex;
 
 import com.password_manager.Password.Password;
+import com.password_manager.dao.EmployeeDAO;
 import com.password_manager.user.User;
 
 public class MethodKeeper 
@@ -72,21 +73,24 @@ public class MethodKeeper
 		return roles[role_enum];
 	}
 	
-	public static Password receivePasswordDetails()
+	public static Password receivePasswordDetails(int user_id)
 	{
 		site_name="";site_password="";site_url="";site_user_name="";
 		Scanner sc=new Scanner(System.in);
-		Map<String,String>details;
-		System.out.println("Enter the name of the password: ");
+		EmployeeDAO emp_dao=new EmployeeDAO();
+		do
+		{
+			System.out.println("Enter the name for the password: ");		
+			site_name=sc.nextLine();			
+		}while(emp_dao.isOccupiedName(site_name,user_id));
 		
-		site_name=sc.nextLine();
 		do
 		{
 			System.out.println("Enter the site url, Press enter if you wish not to add the site url: ");
 			site_url=sc.nextLine();			
 		}while(site_url!=null&&!MethodKeeper.isValidUrl(site_url));
 		do
-		{i
+		{
 			System.out.println("Enter the username for the site: ");
 			site_user_name=sc.nextLine();
 			if(site_user_name.length()==0)
@@ -110,7 +114,7 @@ public class MethodKeeper
 			}
 			else if(option==2)
 			{
-				autoGeneratePassword();
+				site_password=autoGeneratePassword();
 			}
 		}while(site_password.length()<1);
 		
@@ -136,7 +140,7 @@ public class MethodKeeper
         }
         char special[]={'!','@','#','$','%','^','&','*','(',')','_','+','=','{','}','|','?','/',',','<','>'};
         int num[]=new int[10];
-	        System.out.println("Enter the length of the string: ");
+	        System.out.println("Enter the length of the password to be generated: ");
 	        int len=sc.nextInt();
 	        len=len<4?4:len;
 	            int rand;
@@ -144,6 +148,7 @@ public class MethodKeeper
 	            for(int i=0;i<len;i++)
 	            {
 	                rand=new Random().nextInt(4);
+	                System.out.println(rand);
 	                if(rand==1)
 	                {
 	                    pass+=(Character.toString(upper_case[new Random().nextInt(26)]));
@@ -162,6 +167,7 @@ public class MethodKeeper
 	                    pass+=(Character.toString(ch));
 	                }
 	            }
+	            System.out.println("The password generated is "+pass);
 	        return pass;
 	}
 	

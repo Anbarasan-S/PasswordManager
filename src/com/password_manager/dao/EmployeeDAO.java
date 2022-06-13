@@ -180,36 +180,46 @@ public class EmployeeDAO
 		}
 	}
 	
-	public boolean isOccupiedName(String name)
+	public boolean isOccupiedName(String name,int user_id)
 	{
 		try
 		{
 		name=name.trim();
-		query="SELECT * FROM Password WHERE site_name=?";
+		query="SELECT * FROM Password WHERE site_name=? and user_id=?";
 		ps=con.prepareStatement(query);
 		ps.setString(1, name);
+		ps.setInt(2, user_id);
 		ResultSet rs=ps.executeQuery();
 		boolean has_next=rs.next();
 		if(has_next)
 		{
-			System.out.println("A password with ");
+			System.out.println("Another password with the same name already exists. Please try adding the password with any other name");
+			return true;
 		}
+		return false;
 		}
 		catch(Exception ex)
 		{
 			System.out.println("Oops! Internal Server Error");
 		}
+		return false;
 	}
 	
-	public boolean removePassword(Password password_data,User user)
+	public boolean removePassword(int pass_id,int user_id)
 	{
 		try
 		{
-			
+			query="DELETE FROM Password where pass_id=? AND user_id=?";
+			ps=con.prepareStatement(query);
+			ps.setInt(1, pass_id);
+			ps.setInt(2,user_id);
+			ps.executeUpdate();
+			return true;
 		}
 		catch(Exception ex)
 		{
-			
+			System.out.println("Internal server error in removePassword method of dao");
+			return false;
 		}
 	}
 	
@@ -229,13 +239,37 @@ public class EmployeeDAO
 			temp_password.setChanged_by_id(rs.getInt("changed_by_id"));
 			temp_password.setSite_url(rs.getString("site_url"));
 			temp_password.setSite_password(rs.getString("site_password"));
+			temp_password.setSite_user_name(rs.getString("site_user_name"));
 			temp_password.setUser_id(rs.getInt("user_id"));
 			temp_password.setIs_own(rs.getInt("is_own"));
-			temp_password.setCreated_at(rs.getDate("created_at"));
-			temp_password.setLast_changed(rs.getDate("last_changed"));
+			temp_password.setCreated_at(rs.getTimestamp("created_at"));
+			temp_password.setLast_changed(rs.getTimestamp("last_changed"));
 			lst_password.add(temp_password);
 		}
 		return lst_password;
+	}
+	
+	public void editPassword(Password curr_password)
+	{
+		try
+		{
+			query="UPDATE Password set site_name=?,site_url=?,site_password=?,last_changed=?,site_user_name=? where pass_id=?";			
+			ps=con.prepareStatement(query);
+			ps.setString(1,curr_password.getSite_name());
+			ps.setString(2, curr_password.getSite_url());
+			ps.setString(3, curr_password.getSite_password());
+			ps.setTimestamp(4, curr_password.getLast_changed());
+			ps.setString(5, curr_password.getSite_user_name());
+			ps.setInt(6, curr_password.getPass_id());
+			ps.executeUpdate();
+			System.out.println("Password edited successfully. ");
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in employee dao getPasswordById method: "+ex.getMessage());
+			return;
+		}
+		
 	}
 	
 	public ResultSet viewUsers(User user)

@@ -134,11 +134,12 @@ public void sendOtp(String user_name)
             System.out.println("Enter your username: ");
             sc.nextLine();
             user_name=sc.nextLine();
-            System.out.println("Paste the Invite token");
+            System.out.println("Paste the Invite token sent to your email address");
             int org_id;
             try
             {
-            	do {
+            	do 
+            	{
             		String token=sc.next();
             		String decode_token=new String(Base64.getDecoder().decode(token.getBytes()));
             		String split_arr[]=decode_token.split(":");

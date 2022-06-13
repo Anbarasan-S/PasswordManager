@@ -1,12 +1,12 @@
 package com.password_manager.Password;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Password 
 {
 	private int pass_id,user_id,changed_by_id,is_own,owner_pass_id;
 	private String site_name,site_url,site_password,site_user_name;
-	private Date created_at,last_changed;
+	private Timestamp created_at,last_changed;
 	public void setPass_id(int pass_id) {
 		this.pass_id = pass_id;
 	}
@@ -34,10 +34,10 @@ public class Password
 	public void setSite_user_name(String site_user_name) {
 		this.site_user_name = site_user_name;
 	}
-	public void setCreated_at(Date created_at) {
+	public void setCreated_at(Timestamp created_at) {
 		this.created_at = created_at;
 	}
-	public void setLast_changed(Date last_changed) {
+	public void setLast_changed(Timestamp last_changed) {
 		this.last_changed = last_changed;
 	}
 	
@@ -70,10 +70,10 @@ public class Password
 	public String getSite_user_name() {
 		return site_user_name;
 	}
-	public Date getCreated_at() {
+	public Timestamp getCreated_at() {
 		return created_at;
 	}
-	public Date getLast_changed() {
+	public Timestamp getLast_changed() {
 		return last_changed;
 	}
 	
