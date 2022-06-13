@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
-
+import java.net.URL;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -77,12 +77,16 @@ public class MethodKeeper
 		site_name="";site_password="";site_url="";site_user_name="";
 		Scanner sc=new Scanner(System.in);
 		Map<String,String>details;
-		System.out.println("Enter The site name: ");
+		System.out.println("Enter the name of the password: ");
+		
 		site_name=sc.nextLine();
-		System.out.println("Enter the site url, Press enter if you wish not to add the site url: ");
-		site_url=sc.nextLine();
 		do
 		{
+			System.out.println("Enter the site url, Press enter if you wish not to add the site url: ");
+			site_url=sc.nextLine();			
+		}while(site_url!=null&&!MethodKeeper.isValidUrl(site_url));
+		do
+		{i
 			System.out.println("Enter the username for the site: ");
 			site_user_name=sc.nextLine();
 			if(site_user_name.length()==0)
@@ -119,6 +123,7 @@ public class MethodKeeper
 		
 		return password_data;
 	}
+	
 	
 	public static String autoGeneratePassword()
 	{
@@ -293,6 +298,21 @@ public class MethodKeeper
         }
         return privateKey;
     }
+	
+	//checks if the entered url is valid or not
+	public static boolean isValidUrl(String url)
+	{
+		try
+		{
+			new URL(url);
+			return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("The entered url is not a valid url, Please enter a valid url");
+		}
+		return false;
+	}
 
 
 	

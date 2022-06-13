@@ -36,7 +36,7 @@ public class Server
 		
 		while(true&&user.getRole()==1)
 		{
-			System.out.println("1.Add user 2.Remove User 3.Add password 4.Show passwords 5.Exit");
+			System.out.println("1.Add user 2.Remove User 3.Add password 4.Show passwords 5.Remove password 6.Exit");
 			option=sc.nextInt();
 			if(option==1)
 			{
@@ -84,6 +84,17 @@ public class Server
 			}
 			else if(option==5)
 			{
+//				try
+//				{
+//					user.removePassword();					
+//				}
+//				catch
+//				{
+//					
+//				}
+			}
+			else if(option==6)
+			{
 				System.exit(0);
 			}
 			
@@ -92,7 +103,7 @@ public class Server
 		
 		while(true&&user.getRole()==4)
 		{
-			System.out.println("1.Add password 2.Show Password ");
+			System.out.println("1.Add password 2.Show Password 3.Remove Passwords ");
 			option=sc.nextInt();
 			if(option==1)
 			{

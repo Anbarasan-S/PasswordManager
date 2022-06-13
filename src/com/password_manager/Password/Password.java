@@ -65,7 +65,7 @@ public class Password
 		return site_url;
 	}
 	public String getSite_password() {
-		return site_password;
+		return this.site_password;
 	}
 	public String getSite_user_name() {
 		return site_user_name;

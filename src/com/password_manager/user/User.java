@@ -73,6 +73,11 @@ public class User
         }
 	   }
 	   
+	   public void removePassword()
+	   {
+		  
+	   }
+	   
 	  public void showPassword()
 	  {
 		  try
@@ -81,16 +86,22 @@ public class User
 			 int ind=1;   
 			 for(Password pass:lst_password)
 			 {
-				 if(pass.getSite_url().length()==0)
+				 if(pass.getSite_url()==null)
 				 {
 					 pass.setSite_url("-");
 				 }
-				 System.out.println(ind+".) Name: "+pass.getSite_name()+" Password: "+pass.getSite_password()+" Url: "+pass.getSite_url())
+				 if(pass.getSite_user_name()==null)
+				 {
+					 pass.setSite_user_name("-");
+				 }
+				 System.out.println(ind+".)\n Name: "+pass.getSite_name()+"\n Url: "+pass.getSite_url()+"\n Username: "+pass.getSite_user_name()+ " \n Password: "+pass.getSite_password());
+				 System.out.println(" Last Changed: "+pass.getLast_changed()+" ");
+				 ind++;
 			 }
 		  }
 		  catch(Exception ex)
 		  {
-			  System.out.println("Trouble getting the password "+ex);
+			  System.out.println("Trouble getting the password "+ex.getMessage());
 		  }
 	  }
 	  

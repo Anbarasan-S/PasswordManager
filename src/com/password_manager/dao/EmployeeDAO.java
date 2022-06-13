@@ -159,16 +159,15 @@ public class EmployeeDAO
 	{
 		try
 		{
-			
 		String site_name=password_data.getSite_name(),site_url=password_data.getSite_url(),site_password=password_data.getSite_password(),site_username=password_data.getSite_user_name();
 		site_url=site_url.length()==0?null:site_url;
-		
+		password_data.setSite_password(MethodKeeper.encrypt(password_data.getSite_password(),"secret@123#245"));
 		query="Insert into Password(user_id,site_name,site_user_name,site_password,site_url,is_own) VALUES(?,?,?,?,?,?)";
 		ps=con.prepareStatement(query);
 		ps.setInt(1,user.getUser_id());
 		ps.setString(2, site_name);
 		ps.setString(3, site_username);
-		ps.setString(4, site_password);
+		ps.setString(4, password_data.getSite_password());
 		ps.setString(5, site_url);
 		ps.setInt(6,1);
 		ps.executeUpdate();
@@ -181,9 +180,42 @@ public class EmployeeDAO
 		}
 	}
 	
+	public boolean isOccupiedName(String name)
+	{
+		try
+		{
+		name=name.trim();
+		query="SELECT * FROM Password WHERE site_name=?";
+		ps=con.prepareStatement(query);
+		ps.setString(1, name);
+		ResultSet rs=ps.executeQuery();
+		boolean has_next=rs.next();
+		if(has_next)
+		{
+			System.out.println("A password with ");
+		}
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Oops! Internal Server Error");
+		}
+	}
+	
+	public boolean removePassword(Password password_data,User user)
+	{
+		try
+		{
+			
+		}
+		catch(Exception ex)
+		{
+			
+		}
+	}
+	
 	public List<Password> showPassword(int user_id) throws Exception
 	{
-		query="SELECT* from Password where user_id=?";
+		query="SELECT* from Password where user_id=? order by is_own DESC";
 		ps=con.prepareStatement(query);
 		ps.setInt(1,user_id);
 		ResultSet rs=ps.executeQuery();
@@ -200,6 +232,7 @@ public class EmployeeDAO
 			temp_password.setUser_id(rs.getInt("user_id"));
 			temp_password.setIs_own(rs.getInt("is_own"));
 			temp_password.setCreated_at(rs.getDate("created_at"));
+			temp_password.setLast_changed(rs.getDate("last_changed"));
 			lst_password.add(temp_password);
 		}
 		return lst_password;
