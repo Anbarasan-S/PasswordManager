@@ -16,7 +16,7 @@ public class EmailServer
 	public static void sendMail(String receiver,String subject,String message_body) throws IOException
 	{
 	final String sender="anbarasancse2019@mvit.edu.in";
-	FileInputStream fis=new FileInputStream("/home/anbu/password_manager/PasswordManager/src/credentials.properties");
+	FileInputStream fis=new FileInputStream("src/conf/credentials.properties");
 	Properties prop=new Properties();
 	prop.load(fis);
 	final String password=prop.getProperty("password");

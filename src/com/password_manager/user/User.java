@@ -1,19 +1,24 @@
 package com.password_manager.user;
 
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
 import java.sql.Date;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
-import java.util.Scanner;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import com.password_maanger.encryptor.Cryptographer;
 import com.password_manager.Password.Password;
 import com.password_manager.dao.EmployeeDAO;
 import com.password_manager.main.MethodKeeper;
-import com.password_manager.main.Warner;
 
 public class User 
 {
@@ -21,7 +26,11 @@ public class User
 	 private PBEKeySpec pbe_key_spec=null;
 	 private SecretKeyFactory secret_key_factor=null;
      private int pass_id[]=new int[1000],org_id,role,user_id,team_id;
-	  public String getTeam_name() {
+     private KeyPair kpair=null;
+     
+     
+	public String getTeam_name() 
+	{
 		return team_name;
 	}
 
@@ -32,14 +41,36 @@ public class User
 	private EmployeeDAO emp_dao=null;
 	  
 	  public User(){emp_dao=new EmployeeDAO();}
+	  
+	  
 	   
 	   public User(String user_name,int role,String master_password)
 	    {
-	        this.user_name=user_name;
-	        this.role=role;
-			this.master_password=MethodKeeper.hashPassword(master_password,MethodKeeper.generateSalt());
-	        emp_dao=new EmployeeDAO();
+		   
+			   privatePublicKeySetter(master_password);
+			   this.user_name=user_name;
+			   this.role=role;
+			   this.master_password=MethodKeeper.hashPassword(master_password,MethodKeeper.generateSalt());
+			   emp_dao=new EmployeeDAO();
 	    }
+	   
+	   
+	   
+	   	private void privatePublicKeySetter(String master_password)
+	   	{
+	   		Cryptographer new_cryptographer=new Cryptographer();
+	   		this.kpair=new_cryptographer.RsaPublicPrivateGenerator();
+	   		try
+	   		{
+	   			this.public_key=Base64.getEncoder().encodeToString(this.kpair.getPublic().getEncoded());	   			
+	   			this.private_key=new_cryptographer.encrypt(Base64.getEncoder().encodeToString(this.kpair.getPrivate().getEncoded()), master_password);
+	   		}
+	   		catch(Exception ex)
+	   		{
+	   			System.out.println(ex.getMessage());
+	   		}
+	   	}
+	  
 	   
 	   public void removeUser(List<User>lst_usr,String remove_users_data)
 	   {
@@ -76,58 +107,60 @@ public class User
         }
 	   }
 	   
-	   public void removePassword(List<Password>lst_password,String row_nums)
-	   {
-		   String split_row_num[]=row_nums.split(" ");
-		   List<String> temp_password=new ArrayList<>();
-		  for(String row_num:split_row_num)
-		  {
-			  int ind=Integer.parseInt(row_num);
-			  Password pass=lst_password.get(ind-1);
-			  if(ind<=0||lst_password.size()<ind)
-			  {
-				  System.out.println("Invalid row number "+ind+" That row number was ignored");
-			  }
-			  
-			  if(pass.getIs_own()==1)
-			  {
-				  boolean removed=emp_dao.removePassword(pass.getPass_id(),this.user_id);
-				  if(removed)
-				  {
-					 temp_password.add(pass.getSite_name());
-				  }
-			  }
-			  else
-			  {
-				  System.out.println("Users can only delete the password which are owned by them!");
-			  }
-		  }
-		  if(temp_password.size()!=0)
-		  {
-			 System.out.println("The following passwords are removed successfully");
-			 int index=1;
-			 for(String removed_pass:temp_password)
-			 {
-				 System.out.println(index+".)"+" "+removed_pass);
-				 index++;
-			 }
-		  }
-	   }
+//	   public void removePassword(List<Password>lst_password,String row_nums)
+//	   {
+//		   String split_row_num[]=row_nums.split(" ");
+//		   List<String> temp_password=new ArrayList<>();
+//		  for(String row_num:split_row_num)
+//		  {
+//			  int ind=Integer.parseInt(row_num);
+//			  Password pass=lst_password.get(ind-1);
+//			  if(ind<=0||lst_password.size()<ind)
+//			  {
+//				  System.out.println("Invalid row number "+ind+" That row number was ignored");
+//			  }
+//			  
+//			  if(pass.getIs_own()==1)
+//			  {
+//				  boolean removed=emp_dao.removePassword(pass.getPass_id(),this.user_id);
+//				  if(removed)
+//				  {
+//					 temp_password.add(pass.getSite_name());
+//				  }
+//			  }
+//			  else
+//			  {
+//				  System.out.println("Users can only delete the password which are owned by them!");
+//			  }
+//		  }
+//		  if(temp_password.size()!=0)
+//		  {
+//			 System.out.println("The following passwords are removed successfully");
+//			 int index=1;
+//			 for(String removed_pass:temp_password)
+//			 {
+//				 System.out.println(index+".)"+" "+removed_pass);
+//				 index++;
+//			 }
+//		  }
+//	   }
+	   
+	   
 	   
 	  public void showPassword()
 	  {
 		  try
 		  {
-			 List<Password>lst_password=emp_dao.showPassword(this.user_id);
+			 List<Password>lst_password=emp_dao.showPassword(1);
 			 int ind=1;   
 			 for(Password pass:lst_password)
 			 {
 				 if(pass.getSite_url()==null)
 				 {
-					 pass.setSite_url("-");
+					 pass.setSite_url("");
 				 }
-				 pass.setSite_password(MethodKeeper.decrypt(pass.getSite_password(),"secret@123#245"));
-				 System.out.println(ind+".)\n Name: "+pass.getSite_name()+"\n Url: "+pass.getSite_url()+"\n Username: "+pass.getSite_user_name()+ " \n Password: "+pass.getSite_password());
+				 //Set to decrypt mode
+				 System.out.println(ind+".)\n Name: "+pass.getSite_name()+"\n Url: "+pass.getSite_url()+"\n Username: "+pass.getSite_user_name()+ " \n Password: "+pass.getSite_password(1));
 				 System.out.println(" Last Changed: "+pass.getLast_changed()+" ");
 				 ind++;
 			 }
@@ -143,116 +176,7 @@ public class User
 		  }
 	  }
 	  
-	  public void editPassword(List<Password>lst_password,int row_num)
-	  {
-		  boolean is_changed_password=false;
-		  if(row_num<=0||row_num>lst_password.size())
-			{
-				System.out.println("Invalid row number. Please enter a valid row number ");
-				return ;
-			}
-		  Password curr_password=lst_password.get(row_num-1);
-		  System.out.println("Name: "+curr_password.getSite_name()+" Press 1 to edit the password name or press any other number to leave as it is: ");
-		  Scanner sc=new Scanner(System.in);
-		  int opt=sc.nextInt();
-		  String site_name,site_url,site_user_name,site_password = null;
-		  
-		  //Enter the name for the password
-		  if(opt==1)
-		  {
-		  do
-			{
-				System.out.println("Enter the name for the password: ");
-				sc.nextLine();
-				site_name=sc.nextLine();			
-				if(site_name.isEmpty())
-				{
-					System.out.println("The name for the password can't be left empty");
-					continue;
-				}
-				if(site_name.equals(curr_password.getSite_name()))
-				{
-					break;
-				}
-			}while(emp_dao.isOccupiedName(site_name,user_id));
-		  curr_password.setSite_name(site_name);
-		  }
-		
-		  
-		  //Enter the site url
-		  System.out.println("Url: "+curr_password.getSite_url()+" Press 1 to edit the site url or press any other number to leave as it is: ");
-			 opt=sc.nextInt();
-			 if(opt==1)
-			 {
-			  do
-				{
-					System.out.println("Enter the site url ");
-					sc.nextLine();
-					site_url=sc.nextLine();			
-				}while(site_url!=null&&!MethodKeeper.isValidUrl(site_url));
-			  curr_password.setSite_url(site_url);
-			 }
-			
-			 
-		  //Edit the site username
-		  System.out.println("Username: "+curr_password.getSite_user_name()+" Press 1 to edit the site username or press any other number to leave as it is: ");
-		  
-		  opt=sc.nextInt();
-		  if(opt==1)
-		  {
-		  do
-			{
-				System.out.println("Enter the username for the site: ");
-				sc.nextLine();
-				site_user_name=sc.nextLine();
-				if(site_user_name.length()==0)
-				{
-					Warner.requiredWarning("User Name");
-				}
-			}while(site_user_name.length()==0);
-		  curr_password.setSite_user_name(site_user_name);
-		  }
-		  
-		  
-		  //Edit the site password
-		  System.out.println("Password: "+curr_password.getSite_password()+" Press 1 to edit the site password or press any other number to leave as it is: ");
-		  opt=sc.nextInt();
-		  if(opt==1)
-		  {
-			  do
-				{
-					System.out.println("1. Enter the password for the site manually \n2. Automatically generate a strong password");
-					int option=sc.nextInt();
-					if(option==1)
-					{
-						sc.nextLine();
-					site_password=sc.nextLine();
-					if(site_password.length()<1)
-					{
-						Warner.requiredWarning("Password");
-					}
-					}
-					else if(option==2)
-					{
-						site_password=MethodKeeper.autoGeneratePassword();
-					}
-					is_changed_password=true;
-					
-				}while(site_password.length()<1);
-			  curr_password.setSite_password(MethodKeeper.encrypt(site_password,"secret@123#245"));
-			  curr_password.setLast_changed(new Timestamp(System.currentTimeMillis()));
-		  }
-		  emp_dao.editPassword(curr_password);
-	  }
 	  
-	   public boolean addPassword()
-	   {
-		  Password password_data=MethodKeeper.receivePasswordDetails(this.user_id);
-		  return emp_dao.addPassword(password_data,this);
-	   }
-
-	   
-	    
 	    protected void setOrgId(int org_id)
 	    {
 	    	this.org_id=org_id;
@@ -261,7 +185,6 @@ public class User
 	    public void addEmployee(User emp,String user_email_id) throws Exception
 	    {
 	        emp_dao.addInviteUser(user_email_id, emp);
-	       
 	    }
 	    
 		public String getUser_name() {

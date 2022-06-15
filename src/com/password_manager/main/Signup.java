@@ -59,7 +59,7 @@ public void sendOtp(String user_name)
 
    public  void receiveCredentials()
     {
-	   System.out.println("1.Sign up for Organisation\n2.Sign up as an employee of an organisation\n3.Sign up as an individual\n4.Go to main-menu");
+	   System.out.println("1.Sign up for Organisation\n2.Sign up as an employee of an organisation\n3.Sign up as an individual\n4.Go to home page");
         Scanner sc=new Scanner(System.in);
         String user_name,master_password,verify_password;
         int inp=sc.nextInt();

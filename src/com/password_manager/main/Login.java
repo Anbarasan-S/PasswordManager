@@ -16,11 +16,6 @@ public class Login
             user_name=sc.next();
             System.out.println("Enter your master password: ");
             master_password=sc.next();
-            if(master_password.length()<10)
-            {
-                System.out.println("The master_password length must be greater than or equal to 10");
-                return null;
-            }
             EmployeeDAO empDao=new EmployeeDAO();
             if(!empDao.userExists(user_name))
             {

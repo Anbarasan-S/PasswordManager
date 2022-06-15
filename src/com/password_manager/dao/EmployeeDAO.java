@@ -13,15 +13,18 @@ import org.apache.commons.codec.binary.Hex;
 import com.password_manager.Password.Password;
 import com.password_manager.email.EmailServer;
 import com.password_manager.main.MethodKeeper;
+import com.password_manager.main.Client;
 import com.password_manager.organisation.Organisation;
 import com.password_manager.user.User;
 
 public class EmployeeDAO
 {
+	
 	private static String query;
 	private static Connection con=null;
 	private static PreparedStatement ps=null;
 	
+
 	public EmployeeDAO()		
 	{
 		try
@@ -159,15 +162,16 @@ public class EmployeeDAO
 	{
 		try
 		{
-		String site_name=password_data.getSite_name(),site_url=password_data.getSite_url(),site_password=password_data.getSite_password(),site_username=password_data.getSite_user_name();
+		String site_name=password_data.getSite_name(),site_url=password_data.getSite_url(),site_password=password_data.getSite_password(0),site_username=password_data.getSite_user_name();
 		site_url=site_url.length()==0?null:site_url;
-		password_data.setSite_password(MethodKeeper.encrypt(password_data.getSite_password(),"secret@123#245"));
+		//Encrypt the password password mode=0
+		int user_id=user.getUser_id();
 		query="Insert into Password(user_id,site_name,site_user_name,site_password,site_url,is_own) VALUES(?,?,?,?,?,?)";
 		ps=con.prepareStatement(query);
-		ps.setInt(1,user.getUser_id());
+		ps.setInt(1,user_id);
 		ps.setString(2, site_name);
 		ps.setString(3, site_username);
-		ps.setString(4, password_data.getSite_password());
+		ps.setString(4,site_password);
 		ps.setString(5, site_url);
 		ps.setInt(6,1);
 		ps.executeUpdate();
@@ -205,14 +209,15 @@ public class EmployeeDAO
 		return false;
 	}
 	
-	public boolean removePassword(int pass_id,int user_id)
+	public boolean changeTrashState(Password pass,int status)
 	{
 		try
 		{
-			query="DELETE FROM Password where pass_id=? AND user_id=?";
+			query="Update Password set active=? where pass_id=? AND user_id=?";
 			ps=con.prepareStatement(query);
-			ps.setInt(1, pass_id);
-			ps.setInt(2,user_id);
+			ps.setInt(1, status);
+			ps.setInt(2, pass.getPass_id());
+			ps.setInt(3,Client.getUser().getUser_id());
 			ps.executeUpdate();
 			return true;
 		}
@@ -223,11 +228,31 @@ public class EmployeeDAO
 		}
 	}
 	
-	public List<Password> showPassword(int user_id) throws Exception
+	public boolean deletePassword(Password pass)
 	{
-		query="SELECT* from Password where user_id=? order by is_own DESC";
+		try
+		{
+		query="DELETE FROM Password where pass_id=?";
+		ps=con.prepareStatement(query);
+		ps.setInt(1, pass.getPass_id());
+		ps.executeUpdate();
+		return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in delete password of emp dao"+ex.getMessage());
+			return false;
+		}
+		
+	}
+	
+	public List<Password> showPassword(int status) throws Exception
+	{
+		int user_id=Client.getUser().getUser_id();
+		query="SELECT* from Password where user_id=? and status=? order by is_own DESC";
 		ps=con.prepareStatement(query);
 		ps.setInt(1,user_id);
+		ps.setInt(2,status);
 		ResultSet rs=ps.executeQuery();
 		List<Password> lst_password=new ArrayList<>();
 		while(rs.next())
@@ -238,7 +263,7 @@ public class EmployeeDAO
 			temp_password.setSite_name(rs.getString("site_name"));
 			temp_password.setChanged_by_id(rs.getInt("changed_by_id"));
 			temp_password.setSite_url(rs.getString("site_url"));
-			temp_password.setSite_password(rs.getString("site_password"));
+			temp_password.setSite_password(rs.getString("site_password"),0);
 			temp_password.setSite_user_name(rs.getString("site_user_name"));
 			temp_password.setUser_id(rs.getInt("user_id"));
 			temp_password.setIs_own(rs.getInt("is_own"));
@@ -257,12 +282,11 @@ public class EmployeeDAO
 			ps=con.prepareStatement(query);
 			ps.setString(1,curr_password.getSite_name());
 			ps.setString(2, curr_password.getSite_url());
-			ps.setString(3, curr_password.getSite_password());
+			ps.setString(3, curr_password.getSite_password(0));
 			ps.setTimestamp(4, curr_password.getLast_changed());
 			ps.setString(5, curr_password.getSite_user_name());
 			ps.setInt(6, curr_password.getPass_id());
 			ps.executeUpdate();
-			System.out.println("Password edited successfully. ");
 		}
 		catch(Exception ex)
 		{
@@ -419,6 +443,7 @@ public class EmployeeDAO
 			retrived_user.setRole(MethodKeeper.getRole(user_role));
 			retrived_user.setPublic_key(public_key);
 			retrived_user.setUser_id(user_id);
+			retrived_user.setMaster_password(original_password);
 			return retrived_user;
 		}
 		return null;
@@ -513,6 +538,24 @@ public class EmployeeDAO
 		}
 	}
 	
-
+	public String getUserPrivateKey()
+	{
+		try
+		{
+			query="SELECT private_key from User where user_id=?";
+			ps=con.prepareStatement(query);			
+			ps.setInt(1, Client.getUser().getUser_id());
+			ResultSet rs=ps.executeQuery();
+			rs.next();
+			return rs.getString("private_key");
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in get user private key "+ex.getMessage());
+			return null;
+		}
+		
+	}
+	
 	
 }
