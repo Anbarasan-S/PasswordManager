@@ -82,15 +82,16 @@ public class MethodKeeper
 		EmployeeDAO emp_dao=new EmployeeDAO();
 		do
 		{
-			System.out.print("	Enter the name for the password (Or enter two spaces to go back to main menu): ");		
+			System.out.print("	Enter the name for the password: ");		
 			site_name=sc.nextLine();			
 		}while(emp_dao.isOccupiedName(site_name,user_id));
 		
 		do
 		{
-			System.out.print("	Enter the site url (Press enter if you wish not to add the site url, Or enter two spaces to go back to main menu): ");
+			System.out.print("	Enter the site url (Press enter if you wish not to add the site url): ");
 			site_url=sc.nextLine();			
 		}while(!site_url.isEmpty()&&!MethodKeeper.isValidUrl(site_url));
+		
 		do
 		{
 			System.out.print("	Enter the username for the site: ");
@@ -107,7 +108,7 @@ public class MethodKeeper
 			int option=sc.nextInt();
 			if(option==1)
 			{
-				System.out.print("	Enter your password (Or enter two spaces to go back to main menu): ");
+				System.out.print("	Enter your password  ");
 				sc.nextLine();
 			site_password=sc.nextLine();
 			if(site_password.length()<1)

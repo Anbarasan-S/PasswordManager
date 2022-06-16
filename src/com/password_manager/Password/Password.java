@@ -138,10 +138,13 @@ public class Password
 			   {
 				   try
 					  {
-					   System.out.println("The list of Passwords available: ");
 						 List<Password>lst_password=emp_dao.showPassword(status);
 						 HashMap<String,Password> details=new HashMap<>();
 						 int ind=1;   
+						 if(lst_password.size()>0)
+						 {
+							 System.out.println("The list of Passwords available: ");
+						 }
 						 for(Password pass:lst_password)
 						 {
 							 if(pass.getSite_url()==null)
@@ -179,6 +182,8 @@ public class Password
 				{
 					System.out.println("Oops! it looks like you don't have any passwords. Try adding some passwords");				
 				}
+				else
+				{
 				 while(true)
 					{
 					 System.out.println("\n Enter the name of the password for detailed description of the password (Press enter if you wish to go to main menu): ");
@@ -195,11 +200,15 @@ public class Password
 						 Password temp_pass=details.get(str_inp);
 						 System.out.println(" Name: "+temp_pass.getSite_name()+"\n Url: "+temp_pass.getSite_url()+"\n Username: "+temp_pass.getSite_user_name()+ " \n Password: "+temp_pass.getSite_password(1));
 						 System.out.println(" Last Changed: "+temp_pass.getLast_changed()+" ");
-						 System.out.println("Press 1. To edit this password (Or press any other number to continue viewing password):");
+						 System.out.println("Press 1. To edit this password 2. To move this password to trash(Or press any other number to continue viewing password):");
 						 int choice=sc.nextInt();
 						 if(choice==1)
 						 {
 							 editPassword(temp_pass);
+						 }
+						 else if(choice==2)
+						 {
+							 moveToTrash(temp_pass);
 						 }
 					 }
 					 else
@@ -208,43 +217,46 @@ public class Password
 					 }
 					}
 				}
-			
-			public void moveToTrash()
-			{
-				HashMap<String,Password>details=showPasswordOverview(Client.getUser().getUser_id(),1);
-				while(true){
-				System.out.println("Enter the name of the password to move to trash(Or enter two spaces to go to main menu): ");
-				String str_inp=sc.nextLine();
-				
-				if(str_inp.equals("  "))
-				{
-					break;
 				}
-				
-				if(details.containsKey(str_inp))
-				{
-					System.out.println("Are you sure you want to delete the password(Press y to move to trash or press any other character to cancel): ");
+			
+			public void moveToTrash(Password pass)
+			{
+					System.out.println("Are you sure you want to move this password to trash(Press y to move to trash or press any other character to cancel): ");
 					char ch=sc.nextLine().charAt(0);
 					if(ch=='y')
 					{
-						emp_dao.changeTrashState(details.get(str_inp),0);	
+						emp_dao.changeTrashState(pass.getPass_id(),Client.getUser().getUser_id(),0);	
 						System.out.println("Password moved to trash successfully ");
 					}
-				}
 				else
 				{
 					System.out.println("Enter a valid password name to delete ");
 				}
 				}
-			}
 			
 			public void showTrash()
 			{
 				HashMap<String,Password>details=showPasswordOverview(Client.getUser().getUser_id(),0);
+				
+				if(details.isEmpty())
+				{
+					System.out.println("Oops! it looks like you don't have any passwords. Try adding some passwords");				
+				}
+				else
+				{
 				while(true)
 				{
-				System.out.println("Enter the password name to restore or delete from trash (Or enter double space to go to main-menu): ");
+				System.out.println("Enter the password name to restore or delete from trash or press enter to empty trash(Or enter double space to go to main-menu): ");
 				String str_inp=sc.nextLine().toLowerCase();
+				if(str_inp.isEmpty())
+				{
+					System.out.println("Are you sure you want to empty trash(Press y to continue or any other character to cancel):");
+					if(sc.nextLine().charAt(0)=='y')
+					{
+						emp_dao.clearTrash(Client.getUser().getUser_id());
+					}
+					
+				}
 				if(str_inp.equals("  "))
 				{
 					Client.mainMenu();
@@ -256,13 +268,14 @@ public class Password
 					int opt=sc.nextInt();
 					if(opt==1)
 					{
-						emp_dao.changeTrashState(temp_pass, 1);
+						emp_dao.changeTrashState(temp_pass.getPass_id(), Client.getUser().getUser_id(),1);
 					}
 					else if(opt==2)
 					{
 						System.out.println("Are you sure you want to delete the password permanently (Press y to continue or any other key to cancel):");
 						emp_dao.deletePassword(temp_pass);
 					}
+				}
 				}
 			}
 			}

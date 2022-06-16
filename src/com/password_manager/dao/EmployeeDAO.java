@@ -209,21 +209,21 @@ public class EmployeeDAO
 		return false;
 	}
 	
-	public boolean changeTrashState(Password pass,int status)
+	public boolean changeTrashState(int pass_id,int user_id,int status)
 	{
 		try
 		{
-			query="Update Password set active=? where pass_id=? AND user_id=?";
+			query="Update Password set status=? where pass_id=? AND user_id=?";
 			ps=con.prepareStatement(query);
 			ps.setInt(1, status);
-			ps.setInt(2, pass.getPass_id());
-			ps.setInt(3,Client.getUser().getUser_id());
+			ps.setInt(2, pass_id);
+			ps.setInt(3,user_id);
 			ps.executeUpdate();
 			return true;
 		}
 		catch(Exception ex)
 		{
-			System.out.println("Internal server error in removePassword method of dao");
+			System.out.println("Exception in change trash stae: "+ex.getMessage());
 			return false;
 		}
 	}
@@ -244,6 +244,24 @@ public class EmployeeDAO
 			return false;
 		}
 		
+	}
+	
+	
+	public void clearTrash(int user_id)
+	{
+		try
+		{
+		query="DELETE FROM Password where user_id=? and status=?";
+		ps=con.prepareStatement(query);
+		ps.setInt(1,user_id);
+		ps.setInt(2, 0);
+		ps.executeUpdate();
+		System.out.println("All the password in the trash are permanently deleted!!");
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in clear trash "+ex.getMessage());
+		}
 	}
 	
 	public List<Password> showPassword(int status) throws Exception
@@ -390,7 +408,7 @@ public class EmployeeDAO
 			 return false;
 		}
 		
-	//verifying if the password in the db matches the secret_token provided by the user
+	//verifying if the secret_token in the db matches the secret_token provided by the user
 		if(rs.getString("invitee_token").equals(secret_token))
 		{
 			return true;	
