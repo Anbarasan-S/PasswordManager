@@ -1,4 +1,4 @@
-package com.password_maanger.encryptor;
+package com.password_maanger.cryptographer;
 
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -30,7 +30,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.password_manager.main.MethodKeeper;
-import com.password_manager.dao.EmployeeDAO;
+import com.password_manager.dao.UserDAO;
 import com.password_manager.main.Client;
 import com.password_manager.user.User;
 
@@ -158,7 +158,7 @@ public class Cryptographer
 	{
 		try
 		{
-		String key=new EmployeeDAO().getUserPrivateKey();
+		String key=new UserDAO().getUserPrivateKey();
 		key=decrypt(key,Client.getUser().getMaster_password());
 		PrivateKey priv_key=loadPrivateKey(key);
 		Cipher cipher=Cipher.getInstance("RSA");

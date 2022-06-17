@@ -1,6 +1,7 @@
 package com.password_manager.main;
 
 import java.security.Security;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,15 +12,18 @@ import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.password_manager.Password.Password;
-import com.password_manager.dao.EmployeeDAO;
+import com.password_manager.Password.PasswordOperationHandler;
+import com.password_manager.dao.UserDAO;
 import com.password_manager.user.User;
+import com.password_manager.user.UserOperationHandler;
 public class Client 
 {
-	static boolean login=false;
+	private static boolean login=false;
 	private static User user=null;
 	private static Scanner sc=new Scanner(System.in);
 	private static Password password=null;
-	
+	private static PasswordOperationHandler poh=null;
+	private static UserOperationHandler uoh=null;
 	public static User getUser()
 	{
 		return user;
@@ -45,17 +49,23 @@ public class Client
 	
 private static void addPassword()
 {
+	PasswordOperationHandler poh=new PasswordOperationHandler();
 	System.out.println("Enter the required credentials to add the password");
 	Password new_password=MethodKeeper.receivePasswordDetails(user);
-	 boolean added=new_password.addPassword(user);
+	boolean added=poh.addPassword(new_password,user);
 	    if(added)
 	    {
 	    	System.out.println("Password added successfully");
 	    }
 	    else 
 	    {
-	    	System.out.println("Sorry we couldn't add the password");
-	    }
+	    	System.out.println("Password not added!!");
+	    }	
+}
+
+public  void sharePasswordAsOrgAdmin()
+{
+//	System.out.println("Share ")
 }
 
 
@@ -91,11 +101,12 @@ private static void commonMenuHandler(String data)
 	}
 	else if(data.equals("add user"))
 	{
+		uoh=new UserOperationHandler();
 		System.out.println("Enter the invitee's email id");
 		String user_email_id=sc.next();
 		try
 		{
-			user.addEmployee(user,user_email_id);					
+			uoh.addEmployee(user,user_email_id);					
 		}
 		catch(Exception ex)
 		{
@@ -104,13 +115,14 @@ private static void commonMenuHandler(String data)
 	}
 	else if(data.equals("remove user"))
 	{
+		uoh=new UserOperationHandler();
 		List<User>lst_usr=user.viewUsers();
 		if(lst_usr.size()!=0)
 		{
 			System.out.println("Enter the row numbers of the user to remove, To remove multiple users seperate the row number with spaces:(1 10 20)");
 			sc.nextLine();
 			String user_ids=sc.nextLine();					
-			user.removeUser(lst_usr,user_ids);
+			uoh.removeUser(lst_usr,user_ids);
 		}
 		else
 		{
@@ -121,18 +133,19 @@ private static void commonMenuHandler(String data)
 
 private static void showPassword()
 {
-	password.showPassword(user);
+	poh=new PasswordOperationHandler();
+	poh.showPassword(user);
 }
 	
 	public static void mainMenu()
 	{
 		//For super-admin
 	
-		
+		System.out.println("Select any of these options: ");
 			int option;
 				while(true&&user.getRole()==1)
 				{
-					System.out.println("1.Add password 2.Show password  3.Show Trash 4.Add user 5.Remove user 6.Logout");
+					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Add user \n5.Remove user \n6.Logout");
 					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"add user",5,"remove user",6,"logout"));	
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
@@ -148,7 +161,7 @@ private static void showPassword()
 				//For admin
 				while(true&&user.getRole()==2)
 				{
-					System.out.println("1.Add password 2.Show password  3.Show Trash 4.Add user 5.Remove user 6.Logout");
+					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Add user \n5.Remove user \n6.Logout");
 					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"add user",5,"remove user",6,"logout"));	
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
@@ -163,7 +176,7 @@ private static void showPassword()
 				//For team-admin
 				while(true&&user.getRole()==3)
 				{
-					System.out.println("1.Add password 2.Show Password 3.Show Trash 4.Logout");
+					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Logout");
 					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"logout"));
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
@@ -177,7 +190,7 @@ private static void showPassword()
 				//For an employee
 				while(true&&user.getRole()==4)
 				{
-					System.out.println("1.Add password 2.Show Password 3.Show Trash 4.Logout");
+					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Logout");
 					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"logout"));
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
@@ -191,7 +204,7 @@ private static void showPassword()
 			//For individual users
 			while(true&&user.getRole()==5)
 			{
-				System.out.println("1.Add password 2.Show Password 3.Show Trash 4.Logout");
+				System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Logout");
 				Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"logout"));
 				option=sc.nextInt();
 				if(!opt_map.containsKey(option))
@@ -207,7 +220,8 @@ private static void showPassword()
 	
 private static void showTrash()
 {
-	password.showTrash();
+	poh=new PasswordOperationHandler();
+	poh.showTrash();
 }
 	
 	private static void showHomePage()
@@ -217,7 +231,7 @@ private static void showTrash()
 		int option;
 		while(user==null)
 		{
-			System.out.println("1.Sign Up 2.Login ");
+			System.out.println("1.Sign Up \n2.Login ");
 			option=sc.nextInt();
 			if(option==1)
 			{
@@ -226,7 +240,6 @@ private static void showTrash()
 				if(user!=null)
 				{
 					System.out.println("Cheers!! account created successfully");
-					System.out.println(user);
 				}
 			}
 			else if(option==2)
@@ -234,8 +247,8 @@ private static void showTrash()
 				user=new Login().verifyCredentials();
 				if(user!=null)
 				{
-					System.out.println(user);					
-				}
+					System.out.println("\n Welcome back "+user.getUser_name()+" (: \n");
+}
 			}
 		}
 	}

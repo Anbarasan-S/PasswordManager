@@ -15,9 +15,10 @@ import javax.crypto.spec.PBEKeySpec;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import com.password_maanger.encryptor.Cryptographer;
+import com.password_maanger.cryptographer.Cryptographer;
 import com.password_manager.Password.Password;
-import com.password_manager.dao.EmployeeDAO;
+import com.password_manager.dao.UserDAO;
+import com.password_manager.dao.PasswordDAO;
 import com.password_manager.main.MethodKeeper;
 
 public class User 
@@ -27,7 +28,7 @@ public class User
 	 private SecretKeyFactory secret_key_factor=null;
      private int pass_id[]=new int[1000],org_id,role,user_id,team_id;
      private KeyPair kpair=null;
-     
+     PasswordDAO pass_dao=null;
      
 	public String getTeam_name() 
 	{
@@ -38,9 +39,9 @@ public class User
 		this.team_name = team_name;
 	}
 
-	private EmployeeDAO emp_dao=null;
+	private UserDAO user_dao=null;
 	  
-	  public User(){emp_dao=new EmployeeDAO();}
+	  public User(){user_dao=new UserDAO();}
 	  
 	  
 	   
@@ -51,7 +52,7 @@ public class User
 			   this.user_name=user_name;
 			   this.role=role;
 			   this.master_password=MethodKeeper.hashPassword(master_password,MethodKeeper.generateSalt());
-			   emp_dao=new EmployeeDAO();
+			   user_dao=new UserDAO();
 	    }
 	   
 	   
@@ -72,78 +73,9 @@ public class User
 	   	}
 	  
 	   
-	   public void removeUser(List<User>lst_usr,String remove_users_data)
-	   {
-		   String data[]=remove_users_data.split(" ");
-		   List<User> removed_users=new ArrayList<>();
-		   for(String row:data)
-		   {
-			   int row_num=Integer.parseInt(row),size=lst_usr.size();
-			   if(row_num<=0||row_num>size)
-			   {
-				   System.out.println("Invalid row number "+row_num+" and that row number is ignored");
-			   }
-			   else
-			   {
-				   User temp_user=lst_usr.get(row_num-1);
-				   boolean is_removed=emp_dao.removeUser(temp_user.getUser_id());
-				   if(is_removed)
-				   {
-					   removed_users.add(temp_user);
-				   }
-				   else
-				   {
-					   System.out.println("Cannot remove the  user with the username "+temp_user.getUser_name());					   
-				   }
-			   }
-		   }
-		   if(removed_users.size()!=0) 
-		{
-		   System.out.println("The following users are removed successfully from the org and their account will permanently deleted after 5 days: ");
-		   for(int ind=0;ind<removed_users.size();ind++)
-		   {
-			  System.out.println(ind+1+".) "+removed_users.get(ind).getUser_name()); 
-		   }
-        }
-	   }
 	   
-//	   public void removePassword(List<Password>lst_password,String row_nums)
-//	   {
-//		   String split_row_num[]=row_nums.split(" ");
-//		   List<String> temp_password=new ArrayList<>();
-//		  for(String row_num:split_row_num)
-//		  {
-//			  int ind=Integer.parseInt(row_num);
-//			  Password pass=lst_password.get(ind-1);
-//			  if(ind<=0||lst_password.size()<ind)
-//			  {
-//				  System.out.println("Invalid row number "+ind+" That row number was ignored");
-//			  }
-//			  
-//			  if(pass.getIs_own()==1)
-//			  {
-//				  boolean removed=emp_dao.removePassword(pass.getPass_id(),this.user_id);
-//				  if(removed)
-//				  {
-//					 temp_password.add(pass.getSite_name());
-//				  }
-//			  }
-//			  else
-//			  {
-//				  System.out.println("Users can only delete the password which are owned by them!");
-//			  }
-//		  }
-//		  if(temp_password.size()!=0)
-//		  {
-//			 System.out.println("The following passwords are removed successfully");
-//			 int index=1;
-//			 for(String removed_pass:temp_password)
-//			 {
-//				 System.out.println(index+".)"+" "+removed_pass);
-//				 index++;
-//			 }
-//		  }
-//	   }
+	   
+
 	   
 	   
 	   
@@ -151,7 +83,8 @@ public class User
 	  {
 		  try
 		  {
-			 List<Password>lst_password=emp_dao.showPassword(1);
+			 pass_dao=new PasswordDAO(); 
+			 List<Password>lst_password=pass_dao.showPassword(1);
 			 int ind=1;   
 			 for(Password pass:lst_password)
 			 {
@@ -182,10 +115,7 @@ public class User
 	    	this.org_id=org_id;
 	    }
 	    
-	    public void addEmployee(User emp,String user_email_id) throws Exception
-	    {
-	        emp_dao.addInviteUser(user_email_id, emp);
-	    }
+	    
 	    
 		public String getUser_name() {
 			return user_name;
@@ -260,7 +190,7 @@ public class User
 				System.out.println("You are not allowed to access this menu as you are not a part of any organisation");
 				return null;
 			}
-			ResultSet rs=emp_dao.viewUsers(this);
+			ResultSet rs=user_dao.viewUsers(this);
 			List<User> usr_lst=new ArrayList<>();
 			int ind=1;
 			
@@ -306,7 +236,7 @@ public class User
 		public String toString()
 	    {
 			String role[]= {"","Super-Admin","Admin","Team Admin","Employee","User"};
-	        return "User Details:\n User name: "+this.user_name+"\n Role: "+role[this.role];
+	        return "User Details:\n\n User name: "+this.user_name+"\n Role: "+role[this.role];
 	    }
 
 }

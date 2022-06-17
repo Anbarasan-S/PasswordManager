@@ -17,28 +17,27 @@ import com.password_manager.main.Client;
 import com.password_manager.organisation.Organisation;
 import com.password_manager.user.User;
 
-public class EmployeeDAO
+public class UserDAO
 {
 	
-	private static String query;
-	private static Connection con=null;
-	private static PreparedStatement ps=null;
+	private  String query;
+	private  Connection con=null;
+	private  PreparedStatement ps=null;
 	
 
-	public EmployeeDAO()		
+	public UserDAO()		
 	{
 		try
 		{
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			con=DriverManager.getConnection("jdbc:mysql://localhost:3306/PASSWORD_MANAGER?useSSL=false","root","");
+			con=ConnectionProvider.getInstance().getConnection();
 		}
 		catch(Exception ex)
 		{
-			System.out.println("Class Not Found "+ex.getMessage());
+			System.out.println("Exception in user dao "+ex.getMessage());
 		}
 	}
 	
-	public static boolean createOrgWithUser(Organisation org,User user)
+	public  boolean createOrgWithUser(Organisation org,User user)
 	{
 		String org_name=org.getOrgName(),email=user.getUser_name(),hashed_password=user.getMaster_password();
 		int role=user.getRole();
@@ -52,18 +51,22 @@ public class EmployeeDAO
 		ps.setString(1,org_name);
 		ps.executeUpdate();
 		
+		
 		//then create the user/userloyee
-		ps=con.prepareStatement("INSERT INTO User (email,master_password,org_id,user_role) VALUES(?,?,last_insert_id(),?)");
+		ps=con.prepareStatement("INSERT INTO User (email,master_password,org_id,user_role,private_key,public_key) VALUES(?,?,last_insert_id(),?,?,?)");
 		ps.setString(1,email.toLowerCase());
 		ps.setString(2,hashed_password);
 		ps.setInt(3, role);
+		ps.setString(4,user.getPrivate_key());
+		ps.setString(5,user.getPublic_key());
 		ps.executeUpdate();
 		
 		//getting the user id and setting it to the user
 		query="SELECT last_insert_id()";
 		ps=con.prepareStatement(query);
 	  ResultSet rs=ps.executeQuery();
-		int user_id=rs.getInt("user_id");
+	  rs.next();
+		int user_id=rs.getInt("last_insert_id()");
 		user.setUser_id(user_id);
 		con.commit();
 		con.setAutoCommit(true);
@@ -158,31 +161,7 @@ public class EmployeeDAO
 		}
 	}
 	
-	public boolean addPassword(Password password_data,User user)
-	{
-		try
-		{
-		String site_name=password_data.getSite_name(),site_url=password_data.getSite_url(),site_password=password_data.getSite_password(0),site_username=password_data.getSite_user_name();
-		site_url=site_url.length()==0?null:site_url;
-		//Encrypt the password password mode=0
-		int user_id=user.getUser_id();
-		query="Insert into Password(user_id,site_name,site_user_name,site_password,site_url,is_own) VALUES(?,?,?,?,?,?)";
-		ps=con.prepareStatement(query);
-		ps.setInt(1,user_id);
-		ps.setString(2, site_name);
-		ps.setString(3, site_username);
-		ps.setString(4,site_password);
-		ps.setString(5, site_url);
-		ps.setInt(6,1);
-		ps.executeUpdate();
-		return true;
-		}
-		catch(Exception ex)
-		{
-			System.out.println("Exception in add password method of empdao "+ex.getMessage());
-			return false;
-		}
-	}
+	
 	
 	public boolean isOccupiedName(String name,int user_id)
 	{
@@ -209,110 +188,6 @@ public class EmployeeDAO
 		return false;
 	}
 	
-	public boolean changeTrashState(int pass_id,int user_id,int status)
-	{
-		try
-		{
-			query="Update Password set status=? where pass_id=? AND user_id=?";
-			ps=con.prepareStatement(query);
-			ps.setInt(1, status);
-			ps.setInt(2, pass_id);
-			ps.setInt(3,user_id);
-			ps.executeUpdate();
-			return true;
-		}
-		catch(Exception ex)
-		{
-			System.out.println("Exception in change trash stae: "+ex.getMessage());
-			return false;
-		}
-	}
-	
-	public boolean deletePassword(Password pass)
-	{
-		try
-		{
-		query="DELETE FROM Password where pass_id=?";
-		ps=con.prepareStatement(query);
-		ps.setInt(1, pass.getPass_id());
-		ps.executeUpdate();
-		return true;
-		}
-		catch(Exception ex)
-		{
-			System.out.println("Exception in delete password of emp dao"+ex.getMessage());
-			return false;
-		}
-		
-	}
-	
-	
-	public void clearTrash(int user_id)
-	{
-		try
-		{
-		query="DELETE FROM Password where user_id=? and status=?";
-		ps=con.prepareStatement(query);
-		ps.setInt(1,user_id);
-		ps.setInt(2, 0);
-		ps.executeUpdate();
-		System.out.println("All the password in the trash are permanently deleted!!");
-		}
-		catch(Exception ex)
-		{
-			System.out.println("Exception in clear trash "+ex.getMessage());
-		}
-	}
-	
-	public List<Password> showPassword(int status) throws Exception
-	{
-		int user_id=Client.getUser().getUser_id();
-		query="SELECT* from Password where user_id=? and status=? order by is_own DESC";
-		ps=con.prepareStatement(query);
-		ps.setInt(1,user_id);
-		ps.setInt(2,status);
-		ResultSet rs=ps.executeQuery();
-		List<Password> lst_password=new ArrayList<>();
-		while(rs.next())
-		{
-			Password temp_password=new Password();
-			temp_password.setPass_id(rs.getInt("pass_id"));
-			temp_password.setOwner_pass_id(rs.getInt("owner_pass_id"));
-			temp_password.setSite_name(rs.getString("site_name"));
-			temp_password.setChanged_by_id(rs.getInt("changed_by_id"));
-			temp_password.setSite_url(rs.getString("site_url"));
-			temp_password.setSite_password(rs.getString("site_password"),0);
-			temp_password.setSite_user_name(rs.getString("site_user_name"));
-			temp_password.setUser_id(rs.getInt("user_id"));
-			temp_password.setIs_own(rs.getInt("is_own"));
-			temp_password.setCreated_at(rs.getTimestamp("created_at"));
-			temp_password.setLast_changed(rs.getTimestamp("last_changed"));
-			lst_password.add(temp_password);
-		}
-		return lst_password;
-	}
-	
-	public void editPassword(Password curr_password)
-	{
-		try
-		{
-			query="UPDATE Password set site_name=?,site_url=?,site_password=?,last_changed=?,site_user_name=? where pass_id=?";			
-			ps=con.prepareStatement(query);
-			ps.setString(1,curr_password.getSite_name());
-			ps.setString(2, curr_password.getSite_url());
-			ps.setString(3, curr_password.getSite_password(0));
-			ps.setTimestamp(4, curr_password.getLast_changed());
-			ps.setString(5, curr_password.getSite_user_name());
-			ps.setInt(6, curr_password.getPass_id());
-			ps.executeUpdate();
-		}
-		catch(Exception ex)
-		{
-			System.out.println("Exception in employee dao getPasswordById method: "+ex.getMessage());
-			return;
-		}
-		
-	}
 	
 	public ResultSet viewUsers(User user)
 	{
@@ -333,16 +208,7 @@ public class EmployeeDAO
 	}
 	
 	
-	public static String getOrgName(int org_id) throws Exception
-	{
-		query="SELECT org_name FROM Organisation where org_id=?";
-		ps=con.prepareStatement(query);
-		ps.setInt(1, org_id);
-		ResultSet rs=ps.executeQuery();
-		rs.next();
-		String org_name=rs.getString("org_name");
-		return org_name;
-	}
+	
 	
 	
 	public void addInviteUser(String user_email,User user)
@@ -374,7 +240,7 @@ public class EmployeeDAO
 			int otp=1000+(int)(Math.random()*((9999-1000)+1));
 			String invite_token=otp+":"+user.getOrg_id();
 			invite_token=new String(Base64.getEncoder().encode(invite_token.getBytes()));
-			String message="Invite from "+user.getUser_name()+" to join the organisation "+ EmployeeDAO.getOrgName(user.getOrg_id())+ " \nSECRET TOKEN: "+invite_token;
+			String message="Invite from "+user.getUser_name()+" to join the organisation "+ new OrganisationDAO().getOrgName(user.getOrg_id())+ " \nSECRET TOKEN: "+invite_token;
             EmailServer.sendMail(user_email,"Password Manager Verification",message);
 			query="INSERT INTO Invitees(inviter_org_id,invitee_token,invitee_email) VALUES(?,?,?)";
 			ps=con.prepareStatement(query);
@@ -454,7 +320,6 @@ public class EmployeeDAO
 				return null;
 			}
 			
-			System.out.println("Login Successful");
 			User retrived_user=new User();
 			retrived_user.setOrg_id(org_id);
 			retrived_user.setUser_name(user_name);
@@ -571,9 +436,6 @@ public class EmployeeDAO
 		{
 			System.out.println("Exception in get user private key "+ex.getMessage());
 			return null;
-		}
-		
+		}	
 	}
-	
-	
 }

@@ -26,9 +26,9 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.codec.binary.Hex;
 
-import com.password_maanger.encryptor.Cryptographer;
+import com.password_maanger.cryptographer.Cryptographer;
 import com.password_manager.Password.Password;
-import com.password_manager.dao.EmployeeDAO;
+import com.password_manager.dao.UserDAO;
 import com.password_manager.user.User;
 
 public class MethodKeeper 
@@ -59,6 +59,12 @@ public class MethodKeeper
 		}
 	}
 	
+	
+	public static String printBlock(String message)
+	{
+		return "\""+message+"\"";
+	}
+	
 	public static void showUserDetails(User user)
 	{	
 		System.out.println("User-name: "+user.getUser_name()+"\n Role: "+MethodKeeper.getRoleAsString(user.getRole()));
@@ -79,7 +85,7 @@ public class MethodKeeper
 		int user_id=user.getUser_id();
 		site_name="";site_password="";site_url="";site_user_name="";
 		Scanner sc=new Scanner(System.in);
-		EmployeeDAO emp_dao=new EmployeeDAO();
+		UserDAO emp_dao=new UserDAO();
 		do
 		{
 			System.out.print("	Enter the name for the password: ");		
@@ -104,11 +110,11 @@ public class MethodKeeper
 	
 		do
 		{
-			System.out.println("	1. Enter the password for the site manually \n	2. Automatically generate a strong password");
+			System.out.println("	1. Enter the password for the site manually \n	2. Automatically generate a password");
 			int option=sc.nextInt();
 			if(option==1)
 			{
-				System.out.print("	Enter your password  ");
+				System.out.print("	Enter your password:  ");
 				sc.nextLine();
 			site_password=sc.nextLine();
 			if(site_password.length()<1)
@@ -186,7 +192,6 @@ public class MethodKeeper
 	                    pass+=(Character.toString(ch));
 	                }
 	            }
-	            System.out.println("The password generated is "+pass);
 	        return pass;
 	}
 	
@@ -256,6 +261,10 @@ public class MethodKeeper
 	}
 	
 	
+	public static void selectOption()
+	{
+		System.out.println("Select an Option: ");
+	}
 	
 	
 	
@@ -282,7 +291,7 @@ public class MethodKeeper
 	{
 		try
 		{
-			new URL(url);
+			new URL(url).toURI();
 			return true;
 		}
 		catch(Exception ex)

@@ -4,7 +4,7 @@ import java.util.Base64;
 import java.util.Scanner;
 
 import com.password_manager.Password.Password;
-import com.password_manager.dao.EmployeeDAO;
+import com.password_manager.dao.UserDAO;
 import com.password_manager.email.EmailServer;
 import com.password_manager.organisation.Organisation;
 import com.password_manager.user.User;
@@ -13,12 +13,12 @@ import com.password_manager.user.User;
 public class Signup 
 {
 
-    private EmployeeDAO empDao=null;
+    private UserDAO empDao=null;
     private User new_user=null;
     
     public Signup()
     {
-        empDao=new EmployeeDAO();
+        empDao=new UserDAO();
     }
 
    public User initialiser()
@@ -26,6 +26,7 @@ public class Signup
         receiveCredentials();
         return new_user;
     }
+   
 public void sendOtp(String user_name)
 {
 	int checker=2;
@@ -37,6 +38,7 @@ public void sendOtp(String user_name)
      catch(Exception ex)
      {
      	System.out.println(ex.getMessage());
+     	return;
      }
      Scanner sc=new Scanner(System.in);
      while(checker-->0) 
@@ -45,12 +47,13 @@ public void sendOtp(String user_name)
 		 verify_otp=sc.nextInt();
 		 if(verify_otp!=otp)
 		 {
+			 System.out.println("Invalid otp, Please try again");
 			continue;
 		 }
 		 break;
      }
     
-    if(checker==0)
+    if(checker==-1)
     {
     	System.out.println("Too many unsuccessful attempts");
     	receiveCredentials();
@@ -72,8 +75,7 @@ public void sendOtp(String user_name)
             {
             	receiveCredentials();
             }
-            System.out.println("Enter your master password (Note - The master password must atleast contains 10 characters \"\n"
-            		+ "	 and should contain one special character one lower case character one upper case character and one digit :) ");
+            System.out.println("Enter your master password (Note - The master password must atleast contains 10 characters and should contain one special character one lower case character one upper case character and one digit ): ");
             master_password=sc.next();
             while(Warner.warnPassword(master_password))
             {
@@ -173,8 +175,7 @@ public void sendOtp(String user_name)
             	return;
             }
             
-            System.out.println("Enter your master password (Note - The master password must atleast contains 10 characters \"\n"
-            		+ "	 and should contain one special character one lower case character one upper case character and one digit :) ");
+            System.out.println("Enter your master password (Note - The master password must atleast contains 10 characters and should contain one special character one lower case character one upper case character and one digit :) ");
             master_password=sc.next();
             while(Warner.warnPassword(master_password))
             {
@@ -230,7 +231,7 @@ public void sendOtp(String user_name)
         {
         	//Create individual user
         	
-        	System.out.println("Enter the username: ");
+        	System.out.println("Enter your username: ");
             user_name=sc.next();
            if(!MethodKeeper.isValidEmail(user_name))
             {
@@ -296,6 +297,10 @@ public void sendOtp(String user_name)
 	   Organisation org=new Organisation();
    	   org.setOrgName(org_name);
        new_user=new User(user_name,1,master_password);
-       EmployeeDAO.createOrgWithUser(org,new_user);
+       boolean res=new UserDAO().createOrgWithUser(org,new_user);
+       if(!res)
+       {
+    	   new_user=null;
+       }
    }
 }
