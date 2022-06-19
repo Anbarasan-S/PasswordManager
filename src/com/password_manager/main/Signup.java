@@ -13,12 +13,12 @@ import com.password_manager.user.User;
 public class Signup 
 {
 
-    private UserDAO empDao=null;
+    private UserDAO userDao=null;
     private User new_user=null;
     
     public Signup()
     {
-        empDao=new UserDAO();
+        userDao=new UserDAO();
     }
 
    public User initialiser()
@@ -43,7 +43,7 @@ public void sendOtp(String user_name)
      Scanner sc=new Scanner(System.in);
      while(checker-->0) 
      {
-		 System.out.println("Enter the otp sent to your email address: ");
+		 System.out.println("Enter the otp sent to your email address(For Verification): ");
 		 verify_otp=sc.nextInt();
 		 if(verify_otp!=otp)
 		 {
@@ -83,7 +83,7 @@ public void sendOtp(String user_name)
             	int opt=sc.nextInt();
             	if(opt==1)
             	{
-            		System.out.println("Enter your master password: ");
+            		System.out.println("Enter your master password(Note - The master password must atleast contains 10 characters and should contain one special character one lower case character one upper case character and one digit): ");
             		master_password=sc.next();
                     System.out.println("Re-Enter your master password: ");
                     verify_password=sc.next();
@@ -118,12 +118,6 @@ public void sendOtp(String user_name)
             		return;
             	}
             }
-            int checker=2;
-            if(empDao.userExists(user_name))
-            {
-           	 System.out.println("User already exists");
-           	 return;
-            }
            
             sendOtp(user_name);
 
@@ -147,7 +141,7 @@ public void sendOtp(String user_name)
             		String split_arr[]=decode_token.split(":");
             
             	org_id=Integer.parseInt(split_arr[1]);
-               if(!empDao.verifySecretToken(user_name, token,org_id))
+               if(!userDao.verifySecretToken(user_name, token,org_id))
                 {	
                     System.out.println("Oops! It's a Invalid invite token");
                     System.out.println("1.Paste the token again 2.Go to main-menu");
@@ -218,10 +212,11 @@ public void sendOtp(String user_name)
             		return;
             	}
             }
+            
             new_user=new User(user_name,4,master_password);
             new_user.setOrg_id(org_id);
            
-            boolean created=empDao.createEmployee(new_user);
+            boolean created=userDao.createEmployee(new_user);
             if(!created)
             {
             	new_user=null;
@@ -229,7 +224,7 @@ public void sendOtp(String user_name)
         }
         else if(inp==3)
         {
-        	//Create individual user
+       	//Create individual user
         	
         	System.out.println("Enter your username: ");
             user_name=sc.next();
@@ -237,7 +232,7 @@ public void sendOtp(String user_name)
             {
             	receiveCredentials();
             }
-            System.out.println("Enter your master password: ");
+            System.out.println("Enter your master password(Note - The master password must atleast contains 10 characters and should contain one special character one lower case character one upper case character and one digit): ");
             master_password=sc.next();
             System.out.println("Re-Enter your master password: ");
             verify_password=sc.next();
@@ -280,9 +275,20 @@ public void sendOtp(String user_name)
             		return;
             	}
             }	
+            
+            if(userDao.userExists(user_name))
+            {
+           	 System.out.println("User already exists");
+           	 return;
+            }
+            
             sendOtp(user_name);
             new_user=new User(user_name,5,master_password);  
-            empDao.createUser(new_user);
+           boolean created=userDao.createUser(new_user);
+           if(!created)
+           {
+        	   new_user=null;
+           }
             
         }    
         else if(inp==4)

@@ -129,6 +129,11 @@ private static void commonMenuHandler(String data)
 			System.out.println("Oops! no users found in your organisation. Try adding users to your organisation.");
 		}
 	}
+	else if(data.equals("change master password"))
+	{
+		uoh=new UserOperationHandler();
+		uoh.changeMasterPassword();
+	}
 }
 
 private static void showPassword()
@@ -145,8 +150,8 @@ private static void showPassword()
 			int option;
 				while(true&&user.getRole()==1)
 				{
-					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Add user \n5.Remove user \n6.Logout");
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"add user",5,"remove user",6,"logout"));	
+					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Logout");
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"logout"));	
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
 					{
@@ -161,8 +166,8 @@ private static void showPassword()
 				//For admin
 				while(true&&user.getRole()==2)
 				{
-					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Add user \n5.Remove user \n6.Logout");
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"add user",5,"remove user",6,"logout"));	
+					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change master password \n5.Add user \n6.Remove user \n7.Logout");
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"logout"));	
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
 					{
@@ -176,8 +181,8 @@ private static void showPassword()
 				//For team-admin
 				while(true&&user.getRole()==3)
 				{
-					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Logout");
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"logout"));
+					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"logout"));
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
 					{
@@ -190,8 +195,8 @@ private static void showPassword()
 				//For an employee
 				while(true&&user.getRole()==4)
 				{
-					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Logout");
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"logout"));
+					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"logout"));
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
 					{
@@ -204,8 +209,8 @@ private static void showPassword()
 			//For individual users
 			while(true&&user.getRole()==5)
 			{
-				System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Logout");
-				Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"logout"));
+				System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
+				Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"logout"));
 				option=sc.nextInt();
 				if(!opt_map.containsKey(option))
 				{
@@ -248,7 +253,8 @@ private static void showTrash()
 				if(user!=null)
 				{
 					System.out.println("\n Welcome back "+user.getUser_name()+" (: \n");
-}
+					break;
+				}
 			}
 		}
 	}

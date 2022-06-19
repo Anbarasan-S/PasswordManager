@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Hex;
 
+import com.password_maanger.cryptographer.Cryptographer;
 import com.password_manager.Password.Password;
 import com.password_manager.email.EmailServer;
 import com.password_manager.main.MethodKeeper;
@@ -37,14 +38,51 @@ public class UserDAO
 		}
 	}
 	
+	public boolean changeMasterPassword(String old_master_password,String new_master_password,int user_id)
+	{
+		try
+		{
+			Cryptographer cryptographer=new Cryptographer();
+			con.setAutoCommit(false);
+			query="Select * from User where user_id=?";
+			ps=con.prepareStatement(query);
+			ps.setInt(1, user_id);
+			ResultSet rs=ps.executeQuery();
+			rs.next();
+			String private_key=rs.getString("private_key");
+			private_key=cryptographer.decrypt(private_key,old_master_password);
+			String new_private_key=cryptographer.encrypt(private_key, new_master_password);
+			if(private_key==null||new_master_password==null||old_master_password==null)
+			{
+				return false;
+			}
+			new_master_password=cryptographer.hashPassword(new_master_password, cryptographer.randomStringGenerate(16).getBytes());
+			query="Update User set private_key=?,master_password=? where user_id=?";
+			ps=con.prepareStatement(query);
+			ps.setString(1,new_private_key);
+			ps.setString(2, new_master_password);
+			ps.setInt(3, user_id);
+			ps.executeUpdate();
+			con.commit();
+			con.setAutoCommit(true);
+			return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in user dao "+ex.getMessage());
+			return false;
+		}
+		
+	}
+	
 	public  boolean createOrgWithUser(Organisation org,User user)
 	{
-		String org_name=org.getOrgName(),email=user.getUser_name(),hashed_password=user.getMaster_password();
+		String master_password=user.getPlainMasterPassword();
+		String org_name=org.getOrgName(),email=user.getUser_name(),hashed_password=new Cryptographer().hashPassword(master_password,new Cryptographer().randomStringGenerate(16).getBytes());
 		int role=user.getRole();
 		try
 		{
 			
-		con=DriverManager.getConnection("jdbc:mysql://localhost:3306/PASSWORD_MANAGER?useSSL=false","root","");
 		con.setAutoCommit(false);
 		//First creates org
 		ps=con.prepareStatement("INSERT INTO Organisation(org_name) VALUES(?)");
@@ -52,7 +90,7 @@ public class UserDAO
 		ps.executeUpdate();
 		
 		
-		//then create the user/userloyee
+		//then create the user
 		ps=con.prepareStatement("INSERT INTO User (email,master_password,org_id,user_role,private_key,public_key) VALUES(?,?,last_insert_id(),?,?,?)");
 		ps.setString(1,email.toLowerCase());
 		ps.setString(2,hashed_password);
@@ -68,6 +106,7 @@ public class UserDAO
 	  rs.next();
 		int user_id=rs.getInt("last_insert_id()");
 		user.setUser_id(user_id);
+		user.setMaster_password(new Cryptographer().encryptMasterPassword(master_password));
 		con.commit();
 		con.setAutoCommit(true);
 		return true;
@@ -350,12 +389,15 @@ public class UserDAO
 				System.out.println("The user email already exists");
 				return false;
 			}
+			Cryptographer crypto=new Cryptographer();
+			String master_password=user.getPlainMasterPassword();
+			String hashed_password=crypto.hashPassword(master_password, crypto.randomStringGenerate(16).getBytes());
 			
 			con.setAutoCommit(false);
 			query="INSERT into User (email,master_password,user_role,org_id,public_key,private_key) VALUES(?,?,?,?,?,?)";
 			ps=con.prepareStatement(query);
 			ps.setString(1, user.getUser_name().toLowerCase());
-			ps.setString(2, user.getMaster_password());
+			ps.setString(2, hashed_password);
 			ps.setInt(3, user.getRole());
 			ps.setInt(4, user.getOrg_id());
 			ps.setString(5,user.getPublic_key());
@@ -374,6 +416,7 @@ public class UserDAO
 			con.commit();
 			con.setAutoCommit(true);
 			con.close();
+			user.setMaster_password(crypto.encryptMasterPassword(master_password));
 			return true;
 		}
 		catch(Exception ex)
@@ -395,12 +438,16 @@ public class UserDAO
 				System.out.println("The user email already exists");
 				return false;
 			}
+			
+			Cryptographer crypto=new Cryptographer();
+			String master_password=user.getPlainMasterPassword();
+			String hashed_password=crypto.hashPassword(master_password, crypto.randomStringGenerate(16).getBytes());
 		
 			con.setAutoCommit(false);
 			query="INSERT into  User(email,master_password,user_role,public_key,private_key) VALUES(?,?,?,?,?)";
 			ps=con.prepareStatement(query);
 			ps.setString(1, user.getUser_name().toLowerCase());
-			ps.setString(2, user.getMaster_password());
+			ps.setString(2, hashed_password);
 			ps.setInt(3,user.getRole());
 			ps.setString(4,user.getPublic_key());
 			ps.setString(5,user.getPrivate_key());
@@ -408,8 +455,10 @@ public class UserDAO
 			query="SELECT last_insert_id()";
 			ps=con.prepareStatement(query);
 		  ResultSet rs=ps.executeQuery();
-			int user_id=rs.getInt("user_id");
+		  rs.next();
+			int user_id=rs.getInt("last_insert_id()");
 			user.setUser_id(user_id);
+			user.setMaster_password(crypto.encryptMasterPassword(master_password));
 			con.commit();
 			con.setAutoCommit(true);
 			return true;

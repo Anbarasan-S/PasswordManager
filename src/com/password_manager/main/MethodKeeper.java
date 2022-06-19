@@ -90,6 +90,11 @@ public class MethodKeeper
 		{
 			System.out.print("	Enter the name for the password: ");		
 			site_name=sc.nextLine();			
+			if(site_name.isEmpty())
+			{
+				Warner.requiredWarning("Name for the password");
+				continue;
+			}
 		}while(emp_dao.isOccupiedName(site_name,user_id));
 		
 		do
@@ -322,7 +327,7 @@ public class MethodKeeper
 	
 	public static int getRole(String user_role)
 	{
-		List<String> role_lst=new ArrayList<> (List.of("","super-admin","admin","team-admin","employee","user"));
+		List<String> role_lst=new ArrayList<> (List.of("","super-admin","admin","team-admin","employee","indi-user"));
 		return role_lst.indexOf(user_role);
 	}
 }

@@ -13,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 
 public class EmailServer
 {
-	public static void sendMail(String receiver,String subject,String message_body) throws IOException
+	public static void sendMail(String receiver,String subject,String message_body)  throws Exception
 	{
 	final String sender="anbarasancse2019@mvit.edu.in";
 	FileInputStream fis=new FileInputStream("src/conf/credentials.properties");
@@ -34,8 +34,6 @@ public class EmailServer
 			      }  
 	   });  
 
-			    try 
-			    {  
 			    	
 			     System.out.println("Message sending...");  
 			     MimeMessage message = new MimeMessage(session);  
@@ -44,12 +42,6 @@ public class EmailServer
 			     message.setSubject(subject);
 			     message.setText(message_body);
 			     Transport.send(message);  
-			     System.out.println("Message sent successfully...");
-			     
-			     } 
-			    catch (Exception e) 
-			    {
-			    	System.out.println(e.getMessage()); 
-			    }
+			     System.out.println("Message sent successfully..."); 
 	}
 }

@@ -47,11 +47,11 @@ public class User
 	   
 	   public User(String user_name,int role,String master_password)
 	    {
-		   
 			   privatePublicKeySetter(master_password);
 			   this.user_name=user_name;
 			   this.role=role;
-			   this.master_password=MethodKeeper.hashPassword(master_password,MethodKeeper.generateSalt());
+			   this.master_password=master_password;
+//			   this.hashed_master_password=MethodKeeper.hashPassword(master_password,MethodKeeper.generateSalt());
 			   user_dao=new UserDAO();
 	    }
 	   
@@ -73,41 +73,36 @@ public class User
 	   	}
 	  
 	   
-	   
-	   
-
-	   
-	   
-	   
-	  public void showPassword()
-	  {
-		  try
-		  {
-			 pass_dao=new PasswordDAO(); 
-			 List<Password>lst_password=pass_dao.showPassword(1);
-			 int ind=1;   
-			 for(Password pass:lst_password)
-			 {
-				 if(pass.getSite_url()==null)
-				 {
-					 pass.setSite_url("");
-				 }
-				 //Set to decrypt mode
-				 System.out.println(ind+".)\n Name: "+pass.getSite_name()+"\n Url: "+pass.getSite_url()+"\n Username: "+pass.getSite_user_name()+ " \n Password: "+pass.getSite_password(1));
-				 System.out.println(" Last Changed: "+pass.getLast_changed()+" ");
-				 ind++;
-			 }
-			 if(lst_password.size()==0)
-			 {
-				 System.out.println("Oops! it looks like you don't have any passwords. Try adding some password");
-			 }
-		  
-		  }
-		  catch(Exception ex)
-		  {
-			  System.out.println("Trouble getting the password "+ex.getMessage());
-		  }
-	  }
+	
+//	  public void showPassword()
+//	  {
+//		  try
+//		  {
+//			 pass_dao=new PasswordDAO(); 
+//			 List<Password>lst_password=pass_dao.showPassword(1);
+//			 int ind=1;   
+//			 for(Password pass:lst_password)
+//			 {
+//				 if(pass.getSite_url()==null)
+//				 {
+//					 pass.setSite_url("");
+//				 }
+//				 //Set to decrypt mode
+//				 System.out.println(ind+".)\n Name: "+pass.getSite_name()+"\n Url: "+pass.getSite_url()+"\n Username: "+pass.getSite_user_name()+ " \n Password: "+pass.getSite_password(1));
+//				 System.out.println(" Last Changed: "+pass.getLast_changed()+" ");
+//				 ind++;
+//			 }
+//			 if(lst_password.size()==0)
+//			 {
+//				 System.out.println("Oops! it looks like you don't have any passwords. Try adding some password");
+//			 }
+//		  
+//		  }
+//		  catch(Exception ex)
+//		  {
+//			  System.out.println("Trouble getting the password "+ex.getMessage());
+//		  }
+//	  }
 	  
 	  
 	    protected void setOrgId(int org_id)
@@ -124,13 +119,17 @@ public class User
 		public void setUser_name(String user_name) {
 			this.user_name = user_name;
 		}
-
+		
+		public String getPlainMasterPassword()
+		{
+			return this.master_password;
+		}
 		public String getMaster_password() {
-			return master_password;
+			return 	new Cryptographer().decryptMasterPassword(this.master_password);
 		}
 
 		public void setMaster_password(String master_password) {
-			this.master_password = master_password;
+			this.master_password =master_password;
 		}
 
 		public int getRole() {
@@ -238,5 +237,4 @@ public class User
 			String role[]= {"","Super-Admin","Admin","Team Admin","Employee","User"};
 	        return "User Details:\n\n User name: "+this.user_name+"\n Role: "+role[this.role];
 	    }
-
 }
