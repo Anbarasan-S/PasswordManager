@@ -1,6 +1,12 @@
 package com.password_manager.dao;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+
+import com.password_manager.main.MethodKeeper;
+import com.password_manager.user.User;
 
 public class OrganisationDAO 
 {
@@ -31,4 +37,6 @@ public class OrganisationDAO
 		String org_name=rs.getString("org_name");
 		return org_name;
 	}
+	
+	
 }

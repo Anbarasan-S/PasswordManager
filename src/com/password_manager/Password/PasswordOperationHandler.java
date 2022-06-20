@@ -126,8 +126,18 @@ public class PasswordOperationHandler
 		ArrayList<Password>details=showPasswordOverview(user_id,1);
 		if(details==null)
 		{
-			System.out.println("Oops! it looks like you don't have any passwords. Try adding some passwords");		
-			break;
+			System.out.println("Oops! it looks like you don't have any passwords. Try adding some passwords");	
+			System.out.println("1.)Go back");
+			int choice=sc.nextInt();
+			if(choice==1)
+			{
+				break;				
+			}
+			else
+			{
+				System.out.println("Invalid option");
+				continue;
+			}
 		}
 		else
 		{
@@ -218,105 +228,111 @@ public class PasswordOperationHandler
 		if(details==null)
 		{
 			System.out.println("No passwords found in the trash");		
-			break;
+			System.out.println("1.) Go back");
+			int opt=sc.nextInt();
+			if(opt==1)
+			{
+				break;
+			}
+			else
+			{
+				System.out.println("Invalid option!!");
+			}
 		}
 		else
 		{
-			System.out.println("\n	"+(details.size()+1)+".)"+MethodKeeper.printBlock("Select all passwords in the trash"));
-			System.out.println("	"+(details.size()+2)+".)"+MethodKeeper.printBlock("Go to main-menu"));
+			System.out.println("\n	"+(details.size()+1)+".)"+MethodKeeper.printBlock("Empty trash"));
+			System.out.println("	"+(details.size()+2)+".)"+MethodKeeper.printBlock("Go back"));
 			 int val=details.size()+1;
-			 System.out.println("\n Select any of the option for performing more operations "+"(For multiple select separate the row number with spaces (Example:1 2 3 4)) ");
+			 System.out.println("\n Select any of the option for performing more operations: ");
 			 Scanner sc=new Scanner(System.in);
-			 String str_inp=sc.nextLine();
-			 if(str_inp.isEmpty())
-			 str_inp=sc.nextLine();
-			 String inp_arr[]=str_inp.split(" ");
-			 if(inp_arr[0].equals(String.valueOf(details.size()+2)))
+			 int inp=sc.nextInt();
+			 
+			 if(inp==details.size()+1)
 			 {
-				 Client.mainMenu();
-			 }
-			 if(inp_arr.length>=1)
-			 {
-				 System.out.println("1.) Restore passwords\n2.)Delete passwords");
-				 List<Integer>errors=new ArrayList<Integer>();
-				 List<Password> temp_passes=new ArrayList<>();
-				 if(inp_arr[0].equals(String.valueOf(details.size()+1)))
+				 
+				 int pass_ids[]=new int[details.size()],size=details.size();
+				 for(int ind=0;ind<size;ind++)
 				 {
-					 temp_passes.addAll(details);
+					 pass_ids[ind]=details.get(ind).getPass_id();
+				 }
+				 System.out.println("Are you sure you want to empty the trash (Note:Emptying the trash will delete all the passwords in the trash permanently): ");
+				 System.out.println("1.)Empty trash\n2.)Cancel");
+				 int opt=sc.nextInt();
+				 if(opt==1)
+				 {
+					 boolean deleted=pass_dao.deletePassword(pass_ids);
+					 if(deleted)
+					 {
+						 System.out.println("All the passwords in the trash have been deleted permanently "+"\uD83D\uDC4D"+"\n");
+						 continue;
+					 }
 				 }
 				 else
 				 {
-					 
-				 for(String input:inp_arr)
-				 {
-					 try
-					 {
-						 int values=Integer.parseInt(input);
-						 if(values>0&&values<=details.size())
-						 {
-							 temp_passes.add(details.get(values-1));							 
-						 }
-						 else
-						 {
-							 errors.add(values);
-						 }
-					 }
-					 catch(Exception ex)
-					 {
-						 
-					 }
+					 continue;
 				 }
-				}
-				 if(temp_passes.size()>0)
-				 {
-					 pass_dao=new PasswordDAO();
-					 System.out.println("\nThe selected passwords are: ");
-					 int ind=0;
-					 int pass_ids[]=new int[temp_passes.size()];
-					 for(Password pass:temp_passes)
-					 {
-						 pass_ids[ind]=pass.getPass_id();
-						 System.out.println("	"+(ind+1)+".) "+pass.getSite_name());
-						 ind++;
-					 }
-					 
-					 System.out.println("\nWhat operations you wanna do on the selected passwords: ");
-					if(temp_passes.size()==1)
-					System.out.println("1.) Restore the selected password \n2.) Delete the selected  password permanently");
-					else
-					System.out.println("1.)Restore the selected passwords \n2.)Delete the selected passwords permanently");
-					System.out.println("3.)Go back");
+			 }
+			 else if(inp==details.size()+2)
+			 {
+				 break;
+			 }
+			 if(inp<=0||inp>details.size())
+			 {
+				 System.out.println("Invalid option Enter a valid option");
+				 continue;
+			 }
+			 
+			 
+			 System.out.println("What you wanna do with the selected password "+ MethodKeeper.printBlock(details.get(inp-1).getSite_name()));
+			 
+				 System.out.println("1.) Restore password\n2.) Delete password\n3.) Go back");
+					
+				 Password pass=details.get(inp-1);				 
+				 
 					int choice=sc.nextInt();
 					if(choice==1)
 					{
-						boolean state=pass_dao.changeTrashState(pass_ids,Client.getUser().getUser_id(),1);
-						if(state)
+						System.out.println("Are you sure you want to restore the password "+pass.getSite_name());
+						System.out.println("1.)Restore password 2.)Cancel");
+						choice=sc.nextInt();
+						if(choice==1)
 						{
-							System.out.println("The selected passwords have been restored successfully "+"\uD83D\uDC4D"+"\n");
+							boolean state=pass_dao.changeTrashState(new int[] {pass.getPass_id()},Client.getUser().getUser_id(),1);
+							if(state)
+							{
+								System.out.println("The selected password have been restored successfully "+"\uD83D\uDC4D"+"\n");
+							}							
 						}
 						
 					}
 					else if(choice==2)
 					{
-						boolean state=pass_dao.deletePassword(pass_ids);
-						if(state)
+						System.out.println("Are you sure you want to delete the password "+pass.getSite_name());
+						System.out.println("1.)Delete password 2.)Cancel");
+						choice=sc.nextInt();
+						if(choice==1)
 						{
-							System.out.println("The selected passwords have been deleted successfully "+"\uD83D\uDC4D"+"\n");
+							boolean state=pass_dao.deletePassword(new int[] {pass.getPass_id()});
+							if(state)
+							{ 
+								System.out.println("The selected password have been deleted successfully "+"\uD83D\uDC4D"+"\n");
+							}							
 						}
 					}
 					else if(choice==3)
 					{
 						continue;
 					}
-				 }
-				 else
-				 {
-					 System.out.println("Select valid row numbers!!");
+					else
+					{
+						System.out.println("Select a valid option!!");
+					}
 				 }
 			 }
 		}
-	}
-	}
+	
+	
 	
 	//Edit Password
 	public void editPassword(Password temp_pass)
@@ -325,7 +341,7 @@ public class PasswordOperationHandler
 	int user_id=Client.getUser().getUser_id();
 	boolean edit=false;
 				 System.out.println("Select any of the options to edit the password "+MethodKeeper.printBlock(temp_pass.getSite_name())+": ");
-				 System.out.println("\n1. Edit the site name\n2. Edit the site url\n3. Edit the site username\n4. Edit the site password\n (Or press any other number to go back) (To edit multiple fields enter the above described option separated by spaces Example:(1 2 3 4))");
+				 System.out.println("\n1. Edit the name\n2. Edit the site url\n3. Edit the site username\n4. Edit the site password\n (Or press any other number to go back) (To edit multiple fields enter the above described option separated by spaces Example:(1 2 3 4))");
 				 int choice;
 				 String edit_option=sc.nextLine();
 				 if(edit_option.equals("\n")||edit_option.isEmpty())

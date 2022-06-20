@@ -134,6 +134,11 @@ private static void commonMenuHandler(String data)
 		uoh=new UserOperationHandler();
 		uoh.changeMasterPassword();
 	}
+	else if(data.equals("edit user role"))
+	{
+		uoh=new UserOperationHandler();
+		uoh.editUserRole();
+	}
 }
 
 private static void showPassword()
@@ -150,8 +155,8 @@ private static void showPassword()
 			int option;
 				while(true&&user.getRole()==1)
 				{
-					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Logout");
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"logout"));	
+					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Logout");
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"logout"));	
 					option=sc.nextInt();
 					if(!opt_map.containsKey(option))
 					{

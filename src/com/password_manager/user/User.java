@@ -124,7 +124,8 @@ public class User
 		{
 			return this.master_password;
 		}
-		public String getMaster_password() {
+		public String getMaster_password() 
+		{
 			return 	new Cryptographer().decryptMasterPassword(this.master_password);
 		}
 

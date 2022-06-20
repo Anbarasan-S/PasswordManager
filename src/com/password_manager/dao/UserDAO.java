@@ -38,6 +38,46 @@ public class UserDAO
 		}
 	}
 	
+	public boolean setUserRole(int role,int team_id,int user_id)
+	{
+		if(team_id==-1)
+		{
+			try
+			{
+				query="UPDATE User set user_role=? where user_id=?";
+				ps=con.prepareStatement(query);
+				ps.setInt(1, role);
+				ps.setInt(2, user_id);
+				ps.executeUpdate();
+				return true;
+			}
+			catch(Exception ex)
+			{
+				System.out.println("Exception in set user role method of user dao "+ex.getMessage());
+				return false;
+			}
+		}
+		else
+		{
+			try
+			{
+				query="UPDATE User set user_role=?,team_id=? where user_id=?";
+				ps=con.prepareStatement(query);
+				ps.setInt(1, role);
+				ps.setInt(2, team_id);
+				ps.setInt(3, user_id);
+				ps.executeUpdate();
+				return true;
+			}
+			catch(Exception ex)
+			{
+				System.out.println("Exception in set user role method of user dao "+ex.getMessage());
+				return false;
+			}
+			
+		}
+	}
+	
 	public boolean changeMasterPassword(String old_master_password,String new_master_password,int user_id)
 	{
 		try
@@ -116,6 +156,39 @@ public class UserDAO
 			System.out.println(ex);
 			return false;
 		}
+	}
+	
+	
+	public ArrayList<User> getOrgMembers(int org_id,int user_id)
+	{
+		try
+		{
+			ArrayList<User> users=new ArrayList<User>();
+			query="SELECT* FROM User where org_id=? and NOT user_id=?";
+			ps=con.prepareStatement(query);			
+			ps.setInt(1, org_id);
+			ps.setInt(2, user_id);
+			ResultSet rs=ps.executeQuery();
+			while(rs.next())
+			{
+				User temp_user=new User();
+				temp_user.setOrg_id(rs.getInt("org_id"));
+				temp_user.setRole(MethodKeeper.getRole(rs.getString("user_role")));
+				temp_user.setTeam_id(user_id);
+				temp_user.setUser_id(rs.getInt("user_id"));
+				temp_user.setUser_name(rs.getString("email"));
+				users.add(temp_user);
+			}
+			if(users.size()==0)
+				return null;
+			return users;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception caught in getOrgMembers method of organisation dao "+ex.getMessage());
+			return null;
+		}
+		
 	}
 	
 	public boolean userExists(String user_name)
@@ -365,7 +438,7 @@ public class UserDAO
 			retrived_user.setRole(MethodKeeper.getRole(user_role));
 			retrived_user.setPublic_key(public_key);
 			retrived_user.setUser_id(user_id);
-			retrived_user.setMaster_password(original_password);
+			retrived_user.setMaster_password(new Cryptographer().encryptMasterPassword(original_password));
 			return retrived_user;
 		}
 		return null;

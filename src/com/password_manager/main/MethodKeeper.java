@@ -11,6 +11,7 @@ import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -160,15 +161,17 @@ public class MethodKeeper
         	upper_case[ind]=(char)(ind+65);
         	lower_case[ind]=(char)(ind+97);
         }
-        char special[]={'!','@','#','$','%','^','&','*','(',')','_','+','=','{','}','|','?','/',',','<','>'};
+        char special[]={'!','@','#','$','%','^','&','*','(',')','_','+','=','{','}','|','?','/',',','<','>',';',':','[',']','-'};
         int num[]=new int[10];
         for(int ind=0;ind<=9;ind++)
         {
         	num[ind]=ind;
         }
-	        System.out.println("Enter the length of the password to be generated (Or enter two spaces to go back to main menu): ");
+	        System.out.println("Enter the length of the password to be generated(Note:The default length of the password is 8 If you wish to go back press -1): ");
 	        int len=sc.nextInt();
-	        len=len<4?4:len;
+	        if(len==-1)
+	        	return "";
+	        len=len<8?8:len;
 	        if(len>100)
 	        {
 	        	System.out.println("The maximum size for password generation should not exceed 100 and the password will be generated of length 100 ");
@@ -176,7 +179,31 @@ public class MethodKeeper
 	        }
 	            int rand;
 	            String pass="";
-	            for(int ind=0;ind<len;ind++)
+	            List<Character>lst=new LinkedList<>(List.of('l','u','s','n'));
+	            while(lst.size()>0)
+	            {
+	            	rand=new Random().nextInt(lst.size());
+	            	char val=lst.get(rand);
+	            	if(val=='u')
+	            	{
+	            		pass+=Character.toString(upper_case[new Random().nextInt(26)]);	            		
+	            	}
+	            	else if(val=='l')
+	            	{
+	            		pass+=(Character.toString(lower_case[new Random().nextInt(26)]));	            		
+	            	}
+	            	else if(val=='s')
+	            	{
+	            		pass+=(Character.toString(special[new Random().nextInt(special.length)]));	            		
+	            	}
+	            	else if(val=='n')
+	            	{
+	            		pass+=(Character.toString((char)num[new Random().nextInt(10)]+48));	            		
+	            	}
+	            	lst.remove(rand);
+	            }
+	            
+	            for(int ind=4;ind<len;ind++)
 	            {
 	                rand=new Random().nextInt(4);
 	                if(rand==1)
@@ -329,5 +356,29 @@ public class MethodKeeper
 	{
 		List<String> role_lst=new ArrayList<> (List.of("","super-admin","admin","team-admin","employee","indi-user"));
 		return role_lst.indexOf(user_role);
+	}
+	
+	public static String getLikeSymbol()
+	{
+		return "\uD83D\uDC4D";
+	}
+	
+	public static int receiveIntegerInput(String message)
+	{
+		int val;
+		while(true)
+		{
+		try
+		{
+			System.out.println(message);
+			val=sc.nextInt();
+			return val;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Please enter only integer values String values are not allowed!!");
+			sc.nextLine();
+		}
+		}
 	}
 }

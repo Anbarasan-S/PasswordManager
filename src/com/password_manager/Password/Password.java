@@ -71,7 +71,9 @@ public class Password
 				return;
 			}
 			else if(mode==1)
-			this.site_password=new Cryptographer().ecEncryptWithPublicKey(Client.getUser().getPublic_key(),site_password);			
+			{
+				this.site_password=new Cryptographer().ecEncryptWithPublicKey(Client.getUser().getPublic_key(),site_password);			
+			}
 		}
 		catch(Exception ex)
 		{

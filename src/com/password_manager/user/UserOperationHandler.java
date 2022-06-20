@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.password_maanger.cryptographer.Cryptographer;
+import com.password_manager.dao.OrganisationDAO;
 import com.password_manager.dao.PasswordDAO;
 import com.password_manager.dao.UserDAO;
 import com.password_manager.main.Client;
@@ -81,6 +82,88 @@ public class UserOperationHandler
 			}
 			return true;
 		}
+	}
+	
+	public void editUserRole()
+	{
+		int role=Client.getUser().getRole();
+		Scanner sc=new Scanner(System.in);
+		if(role==1) //super-admin
+		{
+			do
+			{
+			ArrayList<User>users=printOrgMembers();
+			if(users!=null)
+			{
+				int val=MethodKeeper.receiveIntegerInput("Select the user you want to assign the role: ");
+				if(val==users.size()+1)
+				{
+					break;
+				}
+				else if(val>0&&val<=users.size())
+				{
+					User user=users.get(val-1);
+					System.out.println("The selected user is "+user.getUser_name());
+					int inp=MethodKeeper.receiveIntegerInput("  1.)Admin \n  2.)Team-Admin");
+					if(inp==1)
+					{
+						UserDAO user_dao=new UserDAO();
+						if(user.getRole()==2)
+						{
+							System.out.println("No changes made as the user was already an admin!!");
+						}
+						user_dao.setUserRole(2,-1,user.getUser_id());
+						System.out.println("Role of the user with the username "+user.getUser_name()+" has updated successfully "+MethodKeeper.getLikeSymbol());
+					}
+					else if(inp==2)
+					{
+						
+					}
+				}
+			}
+			else
+			{
+				System.out.println("1.)Go back");
+				int val=sc.nextInt();
+				if(val==1)
+				{
+					break;
+				}
+			}
+		  }while(true);
+		}
+		else if(role==2)	//admin
+		{
+			
+		}
+		else if(role==3)	//team-admin
+		{
+			
+		}
+	}
+	
+	
+	
+	public ArrayList<User> printOrgMembers()
+	{
+		UserDAO user_dao=new UserDAO();
+		ArrayList<User>users=user_dao.getOrgMembers(Client.getUser().getOrg_id(),Client.getUser().getUser_id());
+		if(users==null)
+		{
+			System.out.println("Oops!! No members found in your organisation. Try adding members to your organisation ");
+			return null;
+		}
+		
+		System.out.println("The list of users available in your organisation: \n");
+		
+		int ind=1;
+		for(User user:users)
+		{
+			System.out.println("  "+ind+".) User Name: "+user.getUser_name()+"  Role: "+MethodKeeper.getRoleAsString(user.getRole()));
+		}
+		
+		System.out.println("  "+(users.size()+1)+".) "+MethodKeeper.printBlock("Go back")+"\n");
+		return users;
 	}
 	
 	public void removeUser(List<User>lst_usr,String remove_users_data)
