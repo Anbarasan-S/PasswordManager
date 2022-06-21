@@ -116,8 +116,7 @@ public class MethodKeeper
 	
 		do
 		{
-			System.out.println("	1. Enter the password for the site manually \n	2. Automatically generate a password");
-			int option=sc.nextInt();
+			int option=MethodKeeper.receiveIntegerInput("	1. Enter the password for the site manually \n	2. Automatically generate a strong password");
 			if(option==1)
 			{
 				System.out.print("	Enter your password:  ");
@@ -167,8 +166,8 @@ public class MethodKeeper
         {
         	num[ind]=ind;
         }
-	        System.out.println("Enter the length of the password to be generated(Note:The default length of the password is 8 If you wish to go back press -1): ");
-	        int len=sc.nextInt();
+	       
+	        int len=MethodKeeper.receiveIntegerInput("Enter the length of the password to be generated(Note:The default length of the password is 8 If you wish to go back press -1): ");
 	        if(len==-1)
 	        	return "";
 	        len=len<8?8:len;
@@ -180,51 +179,65 @@ public class MethodKeeper
 	            int rand;
 	            String pass="";
 	            List<Character>lst=new LinkedList<>(List.of('l','u','s','n'));
+	            int marked[]=new int[len];
+	            char rand_pass[]=new char[len];
 	            while(lst.size()>0)
 	            {
+	            	int loop_rand=new Random().nextInt(8);
+	            	if(marked[loop_rand]==1)
+	            	{
+	            		continue;
+	            	}
+	            	
 	            	rand=new Random().nextInt(lst.size());
 	            	char val=lst.get(rand);
 	            	if(val=='u')
 	            	{
-	            		pass+=Character.toString(upper_case[new Random().nextInt(26)]);	            		
+	            		rand_pass[loop_rand]=upper_case[new Random().nextInt(26)];
 	            	}
 	            	else if(val=='l')
 	            	{
-	            		pass+=(Character.toString(lower_case[new Random().nextInt(26)]));	            		
+	            		rand_pass[loop_rand]=lower_case[new Random().nextInt(26)];
 	            	}
 	            	else if(val=='s')
 	            	{
-	            		pass+=(Character.toString(special[new Random().nextInt(special.length)]));	            		
+	            		rand_pass[loop_rand]=special[new Random().nextInt(special.length)];
 	            	}
 	            	else if(val=='n')
 	            	{
-	            		pass+=(Character.toString((char)num[new Random().nextInt(10)]+48));	            		
+	            		rand_pass[loop_rand]=(char)(num[new Random().nextInt(10)]+48);
 	            	}
+	            	marked[loop_rand]=1;
 	            	lst.remove(rand);
 	            }
 	            
-	            for(int ind=4;ind<len;ind++)
+	            
+	            
+	            for(int ind=0;ind<len;ind++)
 	            {
+	            	if(marked[ind]==1)
+	            	{
+	            		continue;
+	            	}
 	                rand=new Random().nextInt(4);
 	                if(rand==1)
 	                {
-	                    pass+=(Character.toString(upper_case[new Random().nextInt(26)]));
+	                	rand_pass[ind]=upper_case[new Random().nextInt(26)];
 	                }
 	                else if(rand==2)
 	                {
-	                    pass+=(Character.toString(lower_case[new Random().nextInt(26)]));
+	                	rand_pass[ind]=lower_case[new Random().nextInt(26)];
 	                }
 	                else if(rand==3)
 	                {
-	                    pass+=(Character.toString(special[new Random().nextInt(21)]));
+	                	rand_pass[ind]=special[new Random().nextInt(special.length)];
 	                }
 	                else
 	                {
-	                	char ch=(char) (num[new Random().nextInt(10)]+48);
-	                    pass+=(Character.toString(ch));
+	                	rand_pass[ind]=(char) (num[new Random().nextInt(10)]+48);
 	                }
 	            }
-	        return pass;
+ 	        return new String(rand_pass);
 	}
 	
 	public static String randomStringGenerate(int len)
@@ -376,7 +389,7 @@ public class MethodKeeper
 		}
 		catch(Exception ex)
 		{
-			System.out.println("Please enter only integer values String values are not allowed!!");
+			System.out.println("Invalid input!!");
 			sc.nextLine();
 		}
 		}

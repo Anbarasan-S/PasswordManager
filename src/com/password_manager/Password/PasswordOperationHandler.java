@@ -21,9 +21,11 @@ public class PasswordOperationHandler
 	PasswordDAO pass_dao=null;
 	private static Scanner sc=null;
 	private Map<String,String>edit_data=new HashMap<>();
+	
 	public PasswordOperationHandler()
 	{
 		 emp_dao=new UserDAO();
+		 pass_dao=new PasswordDAO();
 		 sc=new Scanner(System.in);
 	}
 	
@@ -35,10 +37,8 @@ public class PasswordOperationHandler
 	{
 		System.out.println("Take a look at the password before adding the password:\n");
 		printPassword(password);
-		System.out.println("Select any of the options to add password: ");
-		System.out.println(" 1.)Edit password\n 2.)Confirm adding password\n 3.)Cancel");
-		int choice=sc.nextInt();
-		if(choice==1)
+		int choice=MethodKeeper.receiveIntegerInput("Select any of the options to add password: \n 1.)Confirm adding password\n 2.)Edit password\n 3.)Cancel");
+		if(choice==2)
 		{
 			edit_data.putIfAbsent("edit", "yes");
 			editPassword(password);
@@ -60,7 +60,7 @@ public class PasswordOperationHandler
 			}
 			edit_data.clear();
 		}
-		else if(choice==2)
+		else if(choice==1)
 		{
 			return pass_dao.addPassword(password,user);			
 		}
@@ -127,37 +127,50 @@ public class PasswordOperationHandler
 		if(details==null)
 		{
 			System.out.println("Oops! it looks like you don't have any passwords. Try adding some passwords");	
-			System.out.println("1.)Go back");
-			int choice=sc.nextInt();
+			int choice=MethodKeeper.receiveIntegerInput("1.)Go back");
 			if(choice==1)
 			{
 				break;				
 			}
 			else
 			{
-				System.out.println("Invalid option");
+				System.out.println("Invalid input!!");
 				continue;
 			}
 		}
 		else
 		{
-			System.out.println("\n Select any of the option for performing more operations "+(details.size()+1)+".) Go back");			
 			
-			int numb=sc.nextInt();
+			System.out.println((details.size()+1)+".) "+MethodKeeper.printBlock("Go back"));
+			int numb=MethodKeeper.receiveIntegerInput("\n Select any of the option for performing more operations ");
 			if(numb==details.size()+1)
 				break;
-			if(details.size()>=numb||numb>0)
+			if(details.size()>=numb&&numb>0)
 			 {
 				 Password temp_pass=details.get(numb-1);
 				 while(pass_dao.isActivePassword(temp_pass.getPass_id()))
 				 {
-				 System.out.println("\nWhat do you wanna do with the selected password "+MethodKeeper.printBlock(temp_pass.getSite_name())+" :\n \n1.)View Password \n2.)Edit Password  \n3.)Delete Password \n4.)Go back");
-				 int opt=sc.nextInt();
+				 int opt=MethodKeeper.receiveIntegerInput("\nWhat do you wanna do with the selected password "+MethodKeeper.printBlock(temp_pass.getSite_name())+" :\n \n1.)View Password \n2.)Edit Password  \n3.)Delete Password \n4.)Go back");
 				 if(opt==1)
 				 {
 					 printPassword(temp_pass);
-					 System.out.println("1.)Go back\n");
-					 int choice=sc.nextInt();
+					 int choice=MethodKeeper.receiveIntegerInput("\n1.)Edit password\n2.)Delete password\n3.)Go back\n");
+					 if(choice==1)
+					 {
+						 editPassword(temp_pass);
+					 }
+					 else if(choice==2)
+					 {
+						 deletePassword(temp_pass);
+					 }
+					 else if(choice==3)
+					 {
+						 
+					 }
+					 else
+					 {
+						 System.out.println("Invalid input!!");
+					 }
 				 }
 				 else if(opt==2)
 				 {
@@ -171,11 +184,15 @@ public class PasswordOperationHandler
 				 {
 					break; 
 				 }
+				 else
+				 {
+					 System.out.println("Invalid input!!");
+				 }
 				 }
 				 }
 			 else
 			 {
-				 System.out.println("Invalid row number!!");
+				 System.out.println("Invalid input!!");
 			 }
 		}
 		}
@@ -183,22 +200,20 @@ public class PasswordOperationHandler
 	
 	public void printPassword(Password temp_pass)
 	{
-		 System.out.println(" Name: "+temp_pass.getSite_name()+"\n Url: "+temp_pass.getSite_url()+"\n Username: "+temp_pass.getSite_user_name()+ " \n Password: "+temp_pass.getSite_password(1));
+		 System.out.print(" Name: "+temp_pass.getSite_name()+"\n Url: "+temp_pass.getSite_url()+"\n Username: "+temp_pass.getSite_user_name()+ " \n Password: "+temp_pass.getSite_password(1));
 		 
 		 if(temp_pass.getLast_changed()!=null)
-		 System.out.println(" Last Changed: "+temp_pass.getLast_changed()+"\n");							
+		 System.out.println(" Last Changed: "+temp_pass.getLast_changed()+"\n"+" Password Strength: "+strengthCalculator(temp_pass.getSite_password(1)));
 		 else
-			 System.out.println("");
+			 System.out.println("Password Strength: "+strengthCalculator(temp_pass.getSite_password(1)));
 	}
 	
 	
 	//Move To Trash
 	public void deletePassword(Password pass)
 	{
-		    System.out.println("What action do you want to perform on the selected password "+MethodKeeper.printBlock(pass.getSite_name()));
-		    System.out.println("1.)Move password to trash"+"\n2.)Delete password permanently("+MethodKeeper.printBlock("Note:This can't be undone. The deleted password will be permanently deleted")+")\n3.)Cancel");
-		    System.out.println("");
-		    int choice=sc.nextInt();
+		    String message="What delete action do you want to perform on the selected password "+MethodKeeper.printBlock(pass.getSite_name())+"\n1.)Move password to trash"+"\n2.)Delete password permanently("+MethodKeeper.printBlock("Note:This can't be undone. The deleted password will be permanently deleted")+")\n3.)Cancel\n";
+		    int choice=MethodKeeper.receiveIntegerInput(message);
 		    if(choice==2)
 		    {
 			    pass_dao=new PasswordDAO();
@@ -220,16 +235,14 @@ public class PasswordOperationHandler
 	//Show Trash
 	public void showTrash()
 	{
-		
 		pass_dao=new PasswordDAO();
 		while(true)
 		{
 		ArrayList<Password>details=showPasswordOverview(Client.getUser().getUser_id(),0);
 		if(details==null)
 		{
-			System.out.println("No passwords found in the trash");		
-			System.out.println("1.) Go back");
-			int opt=sc.nextInt();
+			String message="No passwords found in the trash"+"\n1.) Go back";
+			int opt=MethodKeeper.receiveIntegerInput(message);
 			if(opt==1)
 			{
 				break;
@@ -244,10 +257,8 @@ public class PasswordOperationHandler
 			System.out.println("\n	"+(details.size()+1)+".)"+MethodKeeper.printBlock("Empty trash"));
 			System.out.println("	"+(details.size()+2)+".)"+MethodKeeper.printBlock("Go back"));
 			 int val=details.size()+1;
-			 System.out.println("\n Select any of the option for performing more operations: ");
-			 Scanner sc=new Scanner(System.in);
-			 int inp=sc.nextInt();
 			 
+			 int inp=MethodKeeper.receiveIntegerInput("\n Select any of the option for performing more operations: ");
 			 if(inp==details.size()+1)
 			 {
 				 
@@ -256,9 +267,9 @@ public class PasswordOperationHandler
 				 {
 					 pass_ids[ind]=details.get(ind).getPass_id();
 				 }
-				 System.out.println("Are you sure you want to empty the trash (Note:Emptying the trash will delete all the passwords in the trash permanently): ");
-				 System.out.println("1.)Empty trash\n2.)Cancel");
-				 int opt=sc.nextInt();
+				 
+				 String message="Are you sure you want to empty the trash (Note:Emptying the trash will delete all the passwords in the trash permanently): "+"\n1.)Empty trash\n2.)Cancel";
+				 int opt=MethodKeeper.receiveIntegerInput(message);
 				 if(opt==1)
 				 {
 					 boolean deleted=pass_dao.deletePassword(pass_ids);
@@ -286,16 +297,14 @@ public class PasswordOperationHandler
 			 
 			 System.out.println("What you wanna do with the selected password "+ MethodKeeper.printBlock(details.get(inp-1).getSite_name()));
 			 
-				 System.out.println("1.) Restore password\n2.) Delete password\n3.) Go back");
 					
 				 Password pass=details.get(inp-1);				 
 				 
-					int choice=sc.nextInt();
+					int choice=MethodKeeper.receiveIntegerInput("1.) Restore password\n2.) Delete password\n3.) Go back");
 					if(choice==1)
 					{
-						System.out.println("Are you sure you want to restore the password "+pass.getSite_name());
-						System.out.println("1.)Restore password 2.)Cancel");
-						choice=sc.nextInt();
+						String message="Are you sure you want to restore the password "+pass.getSite_name()+"\n1.)Restore password 2.)Cancel";
+						choice=MethodKeeper.receiveIntegerInput(message);
 						if(choice==1)
 						{
 							boolean state=pass_dao.changeTrashState(new int[] {pass.getPass_id()},Client.getUser().getUser_id(),1);
@@ -308,9 +317,9 @@ public class PasswordOperationHandler
 					}
 					else if(choice==2)
 					{
-						System.out.println("Are you sure you want to delete the password "+pass.getSite_name());
-						System.out.println("1.)Delete password 2.)Cancel");
-						choice=sc.nextInt();
+					
+						String message="Are you sure you want to delete the password "+pass.getSite_name()+"\n1.)Delete password 2.)Cancel";
+						choice=MethodKeeper.receiveIntegerInput(message);
 						if(choice==1)
 						{
 							boolean state=pass_dao.deletePassword(new int[] {pass.getPass_id()});
@@ -350,11 +359,14 @@ public class PasswordOperationHandler
 				 }
 				 List<String>opt_list=new ArrayList<String>(Arrays.asList(edit_option.split(" ")));
 				 //Edit site name
+				 if(!(opt_list.indexOf("1")!=-1||opt_list.indexOf("2")!=-1||opt_list.indexOf("3")!=-1||opt_list.indexOf("4")!=-1))
+				 {
+					 return;
+				 }
 				 
 				 if(opt_list.indexOf("1")!=-1)
 				 {
-					 System.out.println("\n 1.) Add name \n2.) Continue to next field");
-					 choice=sc.nextInt();
+					 choice=MethodKeeper.receiveIntegerInput("\n 1.) Add name \n2.) Continue to next field");
 					 if(choice==1)
 					 {
 					 String site_name="";
@@ -394,8 +406,7 @@ public class PasswordOperationHandler
 				 //Edit site username
 				 if(opt_list.indexOf("3")!=-1)
 				 {
-					 System.out.println("\n1.) Add site username \n2.) Continue to next field");
-					 choice=sc.nextInt();
+					 choice=MethodKeeper.receiveIntegerInput("\n1.) Add site username \n2.) Continue to next field");
 					 if(choice==1)
 					 {
 					 String site_user_name;
@@ -419,18 +430,17 @@ public class PasswordOperationHandler
 				 //Edit site password
 				 if(opt_list.indexOf("4")!=-1)
 				 {
-					 System.out.println("\n1.) Add site password \n2.) Continue to next field");
-					 choice=sc.nextInt();
+					 choice=MethodKeeper.receiveIntegerInput("\n1.) Add site password \n2.) Continue to next field");
 					 if(choice==1)
 					 {
 					 do
 						{
-							System.out.println("	1. Enter the password for the site manually \n	2. Automatically generate a strong password");
-							int option=sc.nextInt();
+							int option=MethodKeeper.receiveIntegerInput("	1. Enter the password for the site manually \n	2. Automatically generate a strong password");
 							if(option==1)
 							{
 								System.out.print("	Enter your password: ");
 								sc.nextLine();
+								
 							site_password=sc.nextLine();
 							if(site_password.length()<1)
 							{
@@ -459,8 +469,7 @@ public class PasswordOperationHandler
 				 {
 					 System.out.println("Take a look at the password before updating: \n\n");
 					 printPassword(temp_pass);
-					 System.out.println("\n1.)Edit password \n2.)Cancel  ");
-					 choice=sc.nextInt();
+					 choice=MethodKeeper.receiveIntegerInput("\n1.)Edit password \n2.)Cancel  ");
 					 if(choice==1)
 					 {
 						 pass_dao.editPassword(temp_pass);
@@ -472,5 +481,46 @@ public class PasswordOperationHandler
 					 System.out.println("No field has changed!!");
 				 }
 
-			 }	
+			 }
+	
+	private String strengthCalculator(String password)
+	{
+		boolean upper=false,lower=false,special=false,digit=false;
+		for(char let:password.toCharArray())
+		{
+			if(Character.isUpperCase(let))
+			{
+				upper=true;
+			}
+			else if(Character.isLowerCase(let))
+			{
+				lower=true;
+			}
+			else if(Character.isDigit(let))
+			{
+				digit=true;
+			}
+			else
+			{
+				special=true;
+			}
+		}
+		if(password.length()>=8&&upper&&lower&&digit)
+		{
+			return "Strong";
+		}
+		else if(password.length()>=6&&(lower||upper||special))
+		{
+			return "Moderate";
+		}
+		else if(password.length()>=4)
+		{
+			return "Weak";
+		}
+		else 
+		{
+			return "Very weak";
+		}
+	}
+	
 }

@@ -174,7 +174,7 @@ public class UserDAO
 				User temp_user=new User();
 				temp_user.setOrg_id(rs.getInt("org_id"));
 				temp_user.setRole(MethodKeeper.getRole(rs.getString("user_role")));
-				temp_user.setTeam_id(user_id);
+				temp_user.setTeam_id(rs.getInt("team_id"));
 				temp_user.setUser_id(rs.getInt("user_id"));
 				temp_user.setUser_name(rs.getString("email"));
 				users.add(temp_user);
@@ -560,4 +560,6 @@ public class UserDAO
 			return null;
 		}	
 	}
+	
+	
 }

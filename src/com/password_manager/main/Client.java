@@ -11,6 +11,7 @@ import javax.crypto.Cipher;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import com.password_maanger.team.TeamOperationHandler;
 import com.password_manager.Password.Password;
 import com.password_manager.Password.PasswordOperationHandler;
 import com.password_manager.dao.UserDAO;
@@ -33,18 +34,7 @@ public class Client
 	{
 		password=new Password();
 	}
-	
-	private static void editPassword()
-	{
-//		try
-//		{
-//		password.editPassword(user);
-//		}
-//		catch(Exception ex)
-//		{
-//			System.out.println("Exception in server.java "+ex.getMessage());
-//		}
-	}
+
 	
 	
 private static void addPassword()
@@ -55,7 +45,7 @@ private static void addPassword()
 	boolean added=poh.addPassword(new_password,user);
 	    if(added)
 	    {
-	    	System.out.println("Password added successfully");
+	    	System.out.println("Password added successfully "+MethodKeeper.getLikeSymbol());
 	    }
 	    else 
 	    {
@@ -139,6 +129,16 @@ private static void commonMenuHandler(String data)
 		uoh=new UserOperationHandler();
 		uoh.editUserRole();
 	}
+	else if(data.equals("create team"))
+	{
+		TeamOperationHandler toh=new TeamOperationHandler();
+		toh.createTeam();
+	}
+	else if(data.equals("show team"))
+	{
+		TeamOperationHandler toh=new TeamOperationHandler();
+		toh.showTeam();
+	}
 }
 
 private static void showPassword()
@@ -155,9 +155,8 @@ private static void showPassword()
 			int option;
 				while(true&&user.getRole()==1)
 				{
-					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Logout");
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"logout"));	
-					option=sc.nextInt();
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"create team",9,"show team",10,"logout"));	
+					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Create Team \n9.Show team \n10.Logout");
 					if(!opt_map.containsKey(option))
 					{
 						System.out.println("Invalid input!!");
@@ -171,9 +170,8 @@ private static void showPassword()
 				//For admin
 				while(true&&user.getRole()==2)
 				{
-					System.out.println("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change master password \n5.Add user \n6.Remove user \n7.Logout");
 					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"logout"));	
-					option=sc.nextInt();
+					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change master password \n5.Add user \n6.Remove user \n7.Logout");
 					if(!opt_map.containsKey(option))
 					{
 						System.out.println("Invalid input!!");
@@ -186,9 +184,8 @@ private static void showPassword()
 				//For team-admin
 				while(true&&user.getRole()==3)
 				{
-					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
 					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"logout"));
-					option=sc.nextInt();
+					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
 					if(!opt_map.containsKey(option))
 					{
 						System.out.println("Invalid input!!");
@@ -200,9 +197,8 @@ private static void showPassword()
 				//For an employee
 				while(true&&user.getRole()==4)
 				{
-					System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
 					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"logout"));
-					option=sc.nextInt();
+					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
 					if(!opt_map.containsKey(option))
 					{
 						System.out.println("Invalid input!!");
@@ -214,9 +210,8 @@ private static void showPassword()
 			//For individual users
 			while(true&&user.getRole()==5)
 			{
-				System.out.println("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
 				Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"logout"));
-				option=sc.nextInt();
+				option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show Password \n3.Show Trash \n4.Change master password \n5.Logout");
 				if(!opt_map.containsKey(option))
 				{
 					System.out.println("Invalid input!!");
@@ -241,8 +236,7 @@ private static void showTrash()
 		int option;
 		while(user==null)
 		{
-			System.out.println("1.Sign Up \n2.Login ");
-			option=sc.nextInt();
+			option=MethodKeeper.receiveIntegerInput("1.Sign Up \n2.Login ");
 			if(option==1)
 			{
 				Signup new_signup=new Signup();
@@ -257,7 +251,7 @@ private static void showTrash()
 				user=new Login().verifyCredentials();
 				if(user!=null)
 				{
-					System.out.println("\n Welcome back "+user.getUser_name()+" (: \n");
+					System.out.println("\n Welcome back "+user.getUser_name()+" 😊 \n");
 					break;
 				}
 			}

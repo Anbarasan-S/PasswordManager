@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.password_maanger.cryptographer.Cryptographer;
+import com.password_maanger.team.Team;
 import com.password_manager.dao.OrganisationDAO;
 import com.password_manager.dao.PasswordDAO;
+import com.password_manager.dao.TeamDAO;
 import com.password_manager.dao.UserDAO;
 import com.password_manager.main.Client;
 import com.password_manager.main.MethodKeeper;
@@ -56,7 +58,7 @@ public class UserOperationHandler
 			String re_entered_password;
 			do
 			{
-				System.out.println("Enter your new master password again(Note:If you loose your master password the master password can't be retreived)s or press enter to cancel:");
+				System.out.println("Enter your new master password again(Note:If you loose your master password the master password can't be retreived) or press enter to cancel:");
 				re_entered_password=sc.nextLine();
 				if(re_entered_password.isEmpty())
 				{
@@ -104,27 +106,48 @@ public class UserOperationHandler
 				{
 					User user=users.get(val-1);
 					System.out.println("The selected user is "+user.getUser_name());
-					int inp=MethodKeeper.receiveIntegerInput("  1.)Admin \n  2.)Team-Admin");
+					int inp=MethodKeeper.receiveIntegerInput("  1.)Admin \n  2.)Team-Admin\n  3.)Employee");
 					if(inp==1)
 					{
-						UserDAO user_dao=new UserDAO();
 						if(user.getRole()==2)
 						{
-							System.out.println("No changes made as the user was already an admin!!");
+							System.out.println("No changes were made as the user is already an admin!!");
+							continue;
 						}
+						UserDAO user_dao=new UserDAO();
 						user_dao.setUserRole(2,-1,user.getUser_id());
-						System.out.println("Role of the user with the username "+user.getUser_name()+" has updated successfully "+MethodKeeper.getLikeSymbol());
+						System.out.println("Role of the user with the username "+user.getUser_name()+" has changed successfully "+MethodKeeper.getLikeSymbol()+"\n");
 					}
 					else if(inp==2)
 					{
+						if(user.getRole()==3)
+						{
+							System.out.println("No changes were made as the user is already a team-admin for another team!!");
+							continue;
+						}
+						ArrayList<Team>teams;
 						
+					}
+					else if(inp==3)
+					{
+						if(user.getRole()==4)
+						{
+							System.out.println("No changes were made as the user was already an employee!!");
+							continue;
+						}
+						UserDAO user_dao=new UserDAO();
+						user_dao.setUserRole(4,-1,user.getUser_id());
+						System.out.println("Role of the user with the username "+user.getUser_name()+" has changed successfully "+MethodKeeper.getLikeSymbol()+"\n");
+					}
+					else
+					{
+						System.out.println("Invalid input!!");
 					}
 				}
 			}
 			else
 			{
-				System.out.println("1.)Go back");
-				int val=sc.nextInt();
+				int val=MethodKeeper.receiveIntegerInput("1.)Go back");
 				if(val==1)
 				{
 					break;
@@ -144,6 +167,7 @@ public class UserOperationHandler
 	
 	
 	
+	
 	public ArrayList<User> printOrgMembers()
 	{
 		UserDAO user_dao=new UserDAO();
@@ -160,10 +184,45 @@ public class UserOperationHandler
 		for(User user:users)
 		{
 			System.out.println("  "+ind+".) User Name: "+user.getUser_name()+"  Role: "+MethodKeeper.getRoleAsString(user.getRole()));
+			ind=ind+1;
 		}
 		
 		System.out.println("  "+(users.size()+1)+".) "+MethodKeeper.printBlock("Go back")+"\n");
 		return users;
+	}
+	
+	public ArrayList<User> printOrgMembers(int overload)
+	{
+		UserDAO user_dao=new UserDAO();
+		ArrayList<User>users=user_dao.getOrgMembers(Client.getUser().getOrg_id(),Client.getUser().getUser_id());
+		if(users==null)
+		{
+			System.out.println("Oops!! No members found in your organisation. Try adding members to your organisation ");
+			return null;
+		}
+		int checked_in=0,ind=1;
+		ArrayList<User>final_users=new ArrayList<>();
+		for(User user:users)
+		{
+			if(user.getTeam_id()==0)
+			{
+				if(checked_in==0)
+				{
+					System.out.println("The list of users available for adding to the team: ");
+					checked_in=1;
+				}
+				System.out.println("  "+ind+".) User Name: "+user.getUser_name()+"  Role: "+MethodKeeper.getRoleAsString(user.getRole()));				
+				final_users.add(user);
+				ind++;
+			}
+		}
+		if(final_users.size()==0)
+		{
+			System.out.println("No user found to add to the team. The users are part of another team!!");
+			return null;
+		}
+		
+		return final_users;
 	}
 	
 	public void removeUser(List<User>lst_usr,String remove_users_data)
