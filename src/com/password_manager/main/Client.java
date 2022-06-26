@@ -58,13 +58,6 @@ public  void sharePasswordAsOrgAdmin()
 //	System.out.println("Share ")
 }
 
-
-private static void viewStrength()
-{
-	
-}
-
-
 private static void logout()
 {
 	user=null;
@@ -110,7 +103,6 @@ private static void commonMenuHandler(String data)
 		if(lst_usr.size()!=0)
 		{
 			System.out.println("Enter the row numbers of the user to remove, To remove multiple users seperate the row number with spaces:(1 10 20)");
-			sc.nextLine();
 			String user_ids=sc.nextLine();					
 			uoh.removeUser(lst_usr,user_ids);
 		}
@@ -139,6 +131,11 @@ private static void commonMenuHandler(String data)
 		TeamOperationHandler toh=new TeamOperationHandler();
 		toh.showTeam();
 	}
+	else if(data.equals("share password"))
+	{
+		TeamOperationHandler toh=new TeamOperationHandler();
+		toh.sharePassword();		
+	}
 }
 
 private static void showPassword()
@@ -155,8 +152,11 @@ private static void showPassword()
 			int option;
 				while(true&&user.getRole()==1)
 				{
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"create team",9,"show team",10,"logout"));	
-					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Create Team \n9.Show team \n10.Logout");
+					
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"create team",9,"show team",10,"share password"));
+					opt_map.put(11,"logout");
+					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Create Team \n9.Show team \n10.Share password \n11.Logout");
+					
 					if(!opt_map.containsKey(option))
 					{
 						System.out.println("Invalid input!!");
@@ -170,8 +170,8 @@ private static void showPassword()
 				//For admin
 				while(true&&user.getRole()==2)
 				{
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"logout"));	
-					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change master password \n5.Add user \n6.Remove user \n7.Logout");
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"create team",9,"show team",10,"logout"));	
+					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Create Team \n9.Show team \n10.Logout");
 					if(!opt_map.containsKey(option))
 					{
 						System.out.println("Invalid input!!");

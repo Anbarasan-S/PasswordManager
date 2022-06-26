@@ -3,6 +3,7 @@ package com.password_maanger.team;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import com.password_manager.dao.TeamDAO;
@@ -67,7 +68,15 @@ public class TeamOperationHandler
 		ArrayList<User>users=new UserOperationHandler().printOrgMembers(1);
 		if(users==null)
 		{
-			break;
+			int opt=MethodKeeper.receiveIntegerInput("  1.) Go back");
+			if(opt==1)
+			{
+				break;
+			}
+			else
+			{
+				System.out.println("Invalid input!!");
+			}
 		}
 		int choice=MethodKeeper.receiveIntegerInput("Select a user to add as team admin "+(users.size()+1)+".) Go back");
 		if(choice==users.size()+1)
@@ -77,7 +86,7 @@ public class TeamOperationHandler
 		if(choice<=0||choice>users.size())
 		{
 			System.out.println("Invalid input!!");
-			continue;
+			continue;               
 		}
 		else
 		{
@@ -106,8 +115,17 @@ public class TeamOperationHandler
 			ArrayList<User>users=new UserOperationHandler().printOrgMembers(1);
 			if(users==null)
 			{
-				break;
+				int opt=MethodKeeper.receiveIntegerInput("  1.) Go back");
+				if(opt==1)
+				{
+					break;
+				}
+				else
+				{
+					System.out.println("Invalid input!!");
+				}
 			}
+			
 			int choice=MethodKeeper.receiveIntegerInput("Select a user to add as a team member: ");
 			if(choice<=0||choice>users.size())
 			{
@@ -148,31 +166,151 @@ public class TeamOperationHandler
 			if(choice>0&&choice<=teams.size())
 			{
 				Team team=teams.get(choice-1);
-				System.out.println("What do you want do with the selected team "+MethodKeeper.printBlock(team.getTeam_name()));
-				choice=MethodKeeper.receiveIntegerInput(" 1.) Add team admin to the team "+MethodKeeper.printBlock(team.getTeam_name())+
-						"\n 2.) Add team member to the team "+MethodKeeper.printBlock(team.getTeam_name())+"\n 3.) View members in the team \n 4.) Go back");
+				int team_id=team.getTeam_id();
+				System.out.println("What do you want to do with the selected team "+MethodKeeper.printBlock(team.getTeam_name()));
+				choice=MethodKeeper.receiveIntegerInput("	1.) Add team admin to the team "+MethodKeeper.printBlock(team.getTeam_name())+
+						"\n	2.) Add team member to the team "+MethodKeeper.printBlock(team.getTeam_name())+"\n	3.) View members in the team \n 4.) "+MethodKeeper.printBlock("Go back"));
 		
 				if(choice==1)
 				{
-					addAsTeamAdmin(team.getTeam_id(),team.getTeam_name());
+					addAsTeamAdmin(team_id,team.getTeam_name());
 				}
 				else if(choice==2)
 				{
-					addAsTeamMember(team.getTeam_id(),team.getTeam_name());
+					addAsTeamMember(team_id,team.getTeam_name());
 				}
 				else if(choice==3)
 				{
+				while(true)
+				{
+					List<User>users=showTeamMember(team_id,team.getTeam_name());
+					if(users==null||users.size()==0)
+					{
+						int inp=MethodKeeper.receiveIntegerInput("1.) Go back");
+						if(inp==1)
+						{
+							break;
+						}
+						else
+						{
+							System.out.println("Invalid input!!");
+							continue;
+						}
+					}
+					int opt=MethodKeeper.receiveIntegerInput("Select any of the option: ");
+					if(opt==users.size()+1)
+					{
+						break;
+					}
 					
+					if(opt>=1&&opt<=users.size()+1)
+					{
+						User user=users.get(opt-1);
+						String status="";
+						if(user.getIs_team_admin()==1)
+							status="Team Admin";
+						else if(user.getIs_team_admin()==0)
+							status="Team Member";
+						System.out.println("What do you want to do with the selected user ("+user.getUser_name()+" Team Role: "+status+")");
+						opt=MethodKeeper.receiveIntegerInput("  1.) Edit user role\n  2.) Remove user from team");
+						if(opt==1)
+						{
+								int inp=MethodKeeper.receiveIntegerInput("Change user to:\n	1.) Team-Admin\n	2.) Team-Member\n3.) "+MethodKeeper.printBlock("Go back"));
+								if(inp==1)
+								{
+									if(status.equals("Team Admin"))
+									{
+										System.out.println("The user is already a team-admin!!");
+									}
+									else
+									{
+										UserDAO user_dao=new UserDAO();
+										boolean changed=user_dao.editTeamRole(user.getUser_id(),1);
+										if(changed)
+										{
+											System.out.println("The user "+user.getUser_name()+" has changed to team admin successfully "+MethodKeeper.getLikeSymbol());
+										}
+										else
+										{
+											System.out.println("The user "+user.getUser_name()+" role has not changed!!");
+										}
+									}
+								}
+								else if(inp==2)
+								{
+									if(status.equals("Team Member"))
+									{
+										System.out.println("The user is already a team-member!!");
+									}
+									else
+									{
+										UserDAO user_dao=new UserDAO();
+										boolean changed=user_dao.editTeamRole(user.getUser_id(),0);
+										if(changed)
+										{
+											System.out.println("The user "+user.getUser_name()+" has changed from team admin to team member successfully "+MethodKeeper.getLikeSymbol());
+										}
+										else
+										{
+											System.out.println("The user "+user.getUser_name()+" role has not changed!!");
+										}
+									}
+								}
+								else if(inp==3)
+								{
+									break;
+								}
+								else
+								{
+									System.out.println("Invalid input!!");
+								}
+							}
+						else if(opt==2)
+						{
+							choice=MethodKeeper.receiveIntegerInput("Are you sure you want to remove the user "+user.getUser_name()+
+									" from the team "+team.getTeam_name()+":\n  1.) Yes\n  2.) Cancel\n  3.) Go back");
+							if(choice==1)
+							{
+								TeamDAO team_dao=new TeamDAO();
+								boolean removed=team_dao.removeUserFromTeam(user.getUser_id());
+								if(removed)
+								{
+									System.out.println("The user removed from the team successfully "+MethodKeeper.getLikeSymbol());                     
+								}                                                                                                                        
+								else
+								{
+									System.out.println("The user is not removed from the team!!");
+								}
+							}
+							else if(choice==2)
+							{
+								continue;
+							}
+							else if(choice==3)
+							{
+								break;
+							}
+							else
+							{
+								System.out.println("Invalid input!!");
+							}
+						}
+						
+					}
+				
 				}
+				}   
 				else if(choice==4)
 				{
-					break;
+//					break;
 				}
-	     	}
 			else
 			{
 				System.out.println("Invalid input!!");
 			}
+				
+			
+		 }
 		}
 		}
 	}
@@ -198,13 +336,111 @@ public class TeamOperationHandler
 		System.out.println("  "+ind+".) Team name: "+team.getTeam_name());
 		ind++;
 	}
+	
 	System.out.println(ind+".) "+MethodKeeper.printBlock("Go back"));
 	return teams;
 	}
 	
-	public HashMap<String,String>showTeamMember()
+	public List<User> showTeamMember(int team_id,String team_name)
 	{
 		UserDAO user_dao=new UserDAO();
-		user_dao.getTeamMembers();
+		List<User> team_members=user_dao.getTeamMembers(team_id);
+		int ind=1;
+		if(team_members==null||team_members.size()==0)
+		{
+			System.out.println("Oops!! No users found in the team "+MethodKeeper.printBlock(team_name));
+			return null;
+		}
+		System.out.println("The list of users available in the team "+MethodKeeper.printBlock(team_name)+":\n");
+		
+		for(User team_member:team_members)
+		{
+			System.out.println("  "+ind+".) Name: "+team_member.getUser_name());
+			ind++;
+		}
+		System.out.println((ind)+".) "+MethodKeeper.printBlock("Go back"));
+		
+		return team_members;
+	}
+	
+	public void sharePassword()
+	{
+		int choice=MethodKeeper.receiveIntegerInput("  1.) Share password with the team\n  2.) Share password individually ");
+		if(choice==1)
+		{
+			while(true)
+			{
+				List<Team>teams=showTeamOverview();
+				int opt=MethodKeeper.receiveIntegerInput("Select any of the teams from the above list: ");
+				if(opt==teams.size()+1)
+				{
+					break;
+				}			
+				
+				if(opt<=0||opt>teams.size())
+				{
+					System.out.println("Invalid input!!");
+				}
+				else
+				{
+					Scanner sc=new Scanner(System.in);
+					Team team=teams.get(opt-1);
+					outerloop:
+					while(true)
+					{
+					List<User>team_members=showTeamMember(team.getTeam_id(),team.getTeam_name());
+					System.out.println("For multiple user seperate the user with spaces Example(1 2 3 4): ");
+					String user_inputs[]=sc.nextLine().split(" ");
+					
+					if(user_inputs.length==1&&user_inputs[0].trim().equals(String.valueOf(team_members.size()+1)))
+					{
+						break;
+					}
+					
+					boolean check=false;
+					List<User>selected_users=new ArrayList<>();
+					for(int ind=0;ind<user_inputs.length;ind++)
+					{
+						try
+						{
+							int numb=Integer.parseInt(user_inputs[ind]);
+							if(numb>team_members.size()||numb<=0)
+							{
+								throw  new Exception("");
+							}
+							selected_users.add(team_members.get(numb-1));
+						}
+						catch(Exception ex)
+						{
+							System.out.println("Your input contains some invalid values!!");
+							check=!check;
+							break;
+						}
+					}
+					if(!check)
+					{
+						System.out.println("Share the password with the selected team members ");
+						int inx=1;
+						
+						for(User user:selected_users)
+						{
+							System.out.println("  "+inx+".) "+user.getUser_name());
+						}
+						
+						int inp=MethodKeeper.receiveIntegerInput("1.) Yes\n2.)Cancel");
+						if(inp==1)
+						{
+							TeamDAO team_dao=new TeamDAO();
+//							team_dao.sharePassword(selected_users);      
+						}
+					}
+				 }
+				}
+			}
+		}
+		else if(choice==2)
+		{
+		
+		}
 	}
 }

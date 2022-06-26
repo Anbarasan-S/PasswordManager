@@ -31,6 +31,7 @@ public class PasswordDAO
 		{
 		String site_name=password_data.getSite_name(),site_url=password_data.getSite_url(),site_password=password_data.getSite_password(0),site_username=password_data.getSite_user_name();
 		site_url=site_url.length()==0?null:site_url;
+		
 		//Encrypt the password password mode=0
 		int user_id=user.getUser_id();
 		query="Insert into Password(user_id,site_name,site_user_name,site_password,site_url,is_own) VALUES(?,?,?,?,?,?)";
@@ -141,7 +142,6 @@ public class PasswordDAO
 			temp_password.setSite_password(rs.getString("site_password"),0);
 			temp_password.setSite_user_name(rs.getString("site_user_name"));
 			temp_password.setUser_id(rs.getInt("user_id"));
-			temp_password.setIs_own(rs.getInt("is_own"));
 			temp_password.setCreated_at(rs.getTimestamp("created_at"));
 			temp_password.setLast_changed(rs.getTimestamp("last_changed"));
 			lst_password.add(temp_password);

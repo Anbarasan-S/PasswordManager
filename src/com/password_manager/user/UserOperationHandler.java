@@ -33,11 +33,10 @@ public class UserOperationHandler
 		{
 			return false;
 		}
-		User hasUser=new UserDAO().verifyHashedPassword(master_password,Client.getUser().getUser_name());
+		User hasUser=new UserDAO().verifyHashedPassword(master_password,Client.getUser().getUser_name(),new String[] {""});
 		if(hasUser==null)
 		{
 			System.out.println("Master password do not match");
-			
 			return changeMasterPassword();
 		}
 		else
@@ -90,23 +89,34 @@ public class UserOperationHandler
 	{
 		int role=Client.getUser().getRole();
 		Scanner sc=new Scanner(System.in);
-		if(role==1) //super-admin
-		{
+		
 			do
 			{
 			ArrayList<User>users=printOrgMembers();
+			if(users==null||users.size()==0)
+			{
+				int choice=MethodKeeper.receiveIntegerInput("	1.)Go back");
+				if(choice==1)
+				{
+					break;						
+				}
+				else
+				{
+					System.out.println("Invlalid input!!");
+				}
+			}
 			if(users!=null)
 			{
 				int val=MethodKeeper.receiveIntegerInput("Select the user you want to assign the role: ");
 				if(val==users.size()+1)
 				{
-					break;
+				break;
 				}
 				else if(val>0&&val<=users.size())
 				{
 					User user=users.get(val-1);
 					System.out.println("The selected user is "+user.getUser_name());
-					int inp=MethodKeeper.receiveIntegerInput("  1.)Admin \n  2.)Team-Admin\n  3.)Employee");
+					int inp=MethodKeeper.receiveIntegerInput("\nSelect a role to assign to "+user.getUser_name()+":\n  1.)Admin \n  2.)User");
 					if(inp==1)
 					{
 						if(user.getRole()==2)
@@ -120,19 +130,9 @@ public class UserOperationHandler
 					}
 					else if(inp==2)
 					{
-						if(user.getRole()==3)
-						{
-							System.out.println("No changes were made as the user is already a team-admin for another team!!");
-							continue;
-						}
-						ArrayList<Team>teams;
-						
-					}
-					else if(inp==3)
-					{
 						if(user.getRole()==4)
 						{
-							System.out.println("No changes were made as the user was already an employee!!");
+							System.out.println("No changes were made as the user was already an user!!");
 							continue;
 						}
 						UserDAO user_dao=new UserDAO();
@@ -145,28 +145,9 @@ public class UserOperationHandler
 					}
 				}
 			}
-			else
-			{
-				int val=MethodKeeper.receiveIntegerInput("1.)Go back");
-				if(val==1)
-				{
-					break;
-				}
-			}
 		  }while(true);
 		}
-		else if(role==2)	//admin
-		{
-			
-		}
-		else if(role==3)	//team-admin
-		{
-			
-		}
-	}
-	
-	
-	
+
 	
 	public ArrayList<User> printOrgMembers()
 	{

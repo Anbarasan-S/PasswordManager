@@ -1,41 +1,15 @@
 package com.password_manager.Password;
 
-import java.security.spec.KeySpec;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import com.password_maanger.cryptographer.Cryptographer;
-import com.password_manager.dao.UserDAO;
-import com.password_manager.main.MethodKeeper;
 import com.password_manager.main.Client;
-import com.password_manager.main.Warner;
-import com.password_manager.user.User;
 
 public class Password 
 {	
-	private int pass_id,user_id,changed_by_id,is_own,owner_pass_id;
+	private int pass_id,user_id,changed_by_id,owner_pass_id;
 	private String site_name,site_url,site_password,site_user_name;
 	private Timestamp created_at,last_changed;
-	private UserDAO emp_dao=null;
-	private Scanner sc;
-	
-	public Password()
-	{
-		emp_dao=new UserDAO();
-		sc=new Scanner(System.in);
-	}
 	
 	public void setPass_id(int pass_id) {
 		this.pass_id = pass_id;
@@ -45,9 +19,6 @@ public class Password
 	}
 	public void setChanged_by_id(int changed_by_id) {
 		this.changed_by_id = changed_by_id;
-	}
-	public void setIs_own(int is_own) {
-		this.is_own = is_own;
 	}
 	public void setOwner_pass_id(int owner_pass_id) {
 		this.owner_pass_id = owner_pass_id;
@@ -101,9 +72,6 @@ public class Password
 	}
 	public int getChanged_by_id() {
 		return changed_by_id;
-	}
-	public int getIs_own() {
-		return is_own;
 	}
 	public int getOwner_pass_id() {
 		return owner_pass_id;

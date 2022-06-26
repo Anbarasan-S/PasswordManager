@@ -29,6 +29,7 @@ import org.apache.commons.codec.binary.Hex;
 
 import com.password_maanger.cryptographer.Cryptographer;
 import com.password_manager.Password.Password;
+import com.password_manager.Password.PasswordOperationHandler;
 import com.password_manager.dao.UserDAO;
 import com.password_manager.user.User;
 
@@ -85,7 +86,7 @@ public class MethodKeeper
 	{
 		int user_id=user.getUser_id();
 		site_name="";site_password="";site_url="";site_user_name="";
-		Scanner sc=new Scanner(System.in);
+		sc=new Scanner(System.in);
 		UserDAO emp_dao=new UserDAO();
 		do
 		{
@@ -120,7 +121,6 @@ public class MethodKeeper
 			if(option==1)
 			{
 				System.out.print("	Enter your password:  ");
-				sc.nextLine();
 			site_password=sc.nextLine();
 			if(site_password.length()<1)
 			{
@@ -129,7 +129,7 @@ public class MethodKeeper
 			}
 			else if(option==2)
 			{
-				site_password=autoGeneratePassword();
+				site_password=new PasswordOperationHandler().autoGeneratePassword();
 			}
 		}while(site_password.length()<1);
 		
@@ -144,101 +144,13 @@ public class MethodKeeper
 		{
 			System.out.println("Exception in receive password details cryptographer "+ex.getMessage());
 		}
-		password_data.setIs_own(1);
 		password_data.setSite_user_name(site_user_name);
 		
 		return password_data;
 	}
 	
 	
-	public static String autoGeneratePassword()
-	{
-        char upper_case[]=new char[26];
-        char lower_case[]=new char[26];
-        for(int ind=0;ind<26;ind++)
-        {
-        	upper_case[ind]=(char)(ind+65);
-        	lower_case[ind]=(char)(ind+97);
-        }
-        char special[]={'!','@','#','$','%','^','&','*','(',')','_','+','=','{','}','|','?','/',',','<','>',';',':','[',']','-'};
-        int num[]=new int[10];
-        for(int ind=0;ind<=9;ind++)
-        {
-        	num[ind]=ind;
-        }
-	       
-	        int len=MethodKeeper.receiveIntegerInput("Enter the length of the password to be generated(Note:The default length of the password is 8 If you wish to go back press -1): ");
-	        if(len==-1)
-	        	return "";
-	        len=len<8?8:len;
-	        if(len>100)
-	        {
-	        	System.out.println("The maximum size for password generation should not exceed 100 and the password will be generated of length 100 ");
-	        	len=100;
-	        }
-	            int rand;
-	            String pass="";
-	            List<Character>lst=new LinkedList<>(List.of('l','u','s','n'));
-	            int marked[]=new int[len];
-	            char rand_pass[]=new char[len];
-	            while(lst.size()>0)
-	            {
-	            	int loop_rand=new Random().nextInt(8);
-	            	if(marked[loop_rand]==1)
-	            	{
-	            		continue;
-	            	}
-	            	
-	            	rand=new Random().nextInt(lst.size());
-	            	char val=lst.get(rand);
-	            	if(val=='u')
-	            	{
-	            		rand_pass[loop_rand]=upper_case[new Random().nextInt(26)];
-	            	}
-	            	else if(val=='l')
-	            	{
-	            		rand_pass[loop_rand]=lower_case[new Random().nextInt(26)];
-	            	}
-	            	else if(val=='s')
-	            	{
-	            		rand_pass[loop_rand]=special[new Random().nextInt(special.length)];
-	            	}
-	            	else if(val=='n')
-	            	{
-	            		rand_pass[loop_rand]=(char)(num[new Random().nextInt(10)]+48);
-	            	}
-	            	marked[loop_rand]=1;
-	            	lst.remove(rand);
-	            }
-	            
-	            
-	            
-	            for(int ind=0;ind<len;ind++)
-	            {
-	            	if(marked[ind]==1)
-	            	{
-	            		continue;
-	            	}
-	                rand=new Random().nextInt(4);
-	                if(rand==1)
-	                {
-	                	rand_pass[ind]=upper_case[new Random().nextInt(26)];
-	                }
-	                else if(rand==2)
-	                {
-	                	rand_pass[ind]=lower_case[new Random().nextInt(26)];
-	                }
-	                else if(rand==3)
-	                {
-	                	rand_pass[ind]=special[new Random().nextInt(special.length)];
-	                }
-	                else
-	                {
-	                	rand_pass[ind]=(char) (num[new Random().nextInt(10)]+48);
-	                }
-	            }
- 	        return new String(rand_pass);
-	}
+	
 	
 	public static String randomStringGenerate(int len)
 	{

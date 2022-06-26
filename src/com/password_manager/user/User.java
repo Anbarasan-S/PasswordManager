@@ -24,11 +24,8 @@ import com.password_manager.main.MethodKeeper;
 public class User 
 {
 	 private String user_name,master_password,private_key,public_key,team_name;
-	 private PBEKeySpec pbe_key_spec=null;
-	 private SecretKeyFactory secret_key_factor=null;
-     private int pass_id[]=new int[1000],org_id,role,user_id,team_id;
-     private KeyPair kpair=null;
-     PasswordDAO pass_dao=null;
+     private int org_id,role,user_id,team_id,is_team_admin;
+
      
 	public String getTeam_name() 
 	{
@@ -39,19 +36,26 @@ public class User
 		this.team_name = team_name;
 	}
 
+	public void setIs_team_admin(int is_team_admin) {
+		this.is_team_admin = is_team_admin;
+	}
+
 	private UserDAO user_dao=null;
 	  
 	  public User(){user_dao=new UserDAO();}
 	  
 	  
 	   
-	   public User(String user_name,int role,String master_password)
+	   public int getIs_team_admin() {
+		return is_team_admin;
+	}
+
+	public User(String user_name,int role,String master_password)
 	    {
 			   privatePublicKeySetter(master_password);
 			   this.user_name=user_name;
 			   this.role=role;
 			   this.master_password=master_password;
-//			   this.hashed_master_password=MethodKeeper.hashPassword(master_password,MethodKeeper.generateSalt());
 			   user_dao=new UserDAO();
 	    }
 	   
@@ -59,50 +63,20 @@ public class User
 	   
 	   	private void privatePublicKeySetter(String master_password)
 	   	{
+	        KeyPair kpair=null;
 	   		Cryptographer new_cryptographer=new Cryptographer();
-	   		this.kpair=new_cryptographer.RsaPublicPrivateGenerator();
+	   		kpair=new_cryptographer.RsaPublicPrivateGenerator();
 	   		try
 	   		{
-	   			this.public_key=Base64.getEncoder().encodeToString(this.kpair.getPublic().getEncoded());	   			
-	   			this.private_key=new_cryptographer.encrypt(Base64.getEncoder().encodeToString(this.kpair.getPrivate().getEncoded()), master_password);
+	   			this.public_key=Base64.getEncoder().encodeToString(kpair.getPublic().getEncoded());	   			
+	   			this.private_key=new_cryptographer.encrypt(Base64.getEncoder().encodeToString(kpair.getPrivate().getEncoded()), master_password);
 	   		}
 	   		catch(Exception ex)
 	   		{
 	   			System.out.println(ex.getMessage());
 	   		}
 	   	}
-	  
-	   
-	
-//	  public void showPassword()
-//	  {
-//		  try
-//		  {
-//			 pass_dao=new PasswordDAO(); 
-//			 List<Password>lst_password=pass_dao.showPassword(1);
-//			 int ind=1;   
-//			 for(Password pass:lst_password)
-//			 {
-//				 if(pass.getSite_url()==null)
-//				 {
-//					 pass.setSite_url("");
-//				 }
-//				 //Set to decrypt mode
-//				 System.out.println(ind+".)\n Name: "+pass.getSite_name()+"\n Url: "+pass.getSite_url()+"\n Username: "+pass.getSite_user_name()+ " \n Password: "+pass.getSite_password(1));
-//				 System.out.println(" Last Changed: "+pass.getLast_changed()+" ");
-//				 ind++;
-//			 }
-//			 if(lst_password.size()==0)
-//			 {
-//				 System.out.println("Oops! it looks like you don't have any passwords. Try adding some password");
-//			 }
-//		  
-//		  }
-//		  catch(Exception ex)
-//		  {
-//			  System.out.println("Trouble getting the password "+ex.getMessage());
-//		  }
-//	  }
+	   	
 	  
 	  
 	    protected void setOrgId(int org_id)
@@ -165,13 +139,7 @@ public class User
 			this.public_key = public_key;
 		}
 
-		public int[] getPass_id() {
-			return pass_id;
-		}
-
-		public void setPass_id(int[] pass_id) {
-			this.pass_id = pass_id;
-		}
+	
 
 		public int getOrg_id() {
 			return org_id;

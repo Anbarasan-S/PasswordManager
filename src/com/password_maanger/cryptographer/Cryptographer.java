@@ -50,7 +50,6 @@ public class Cryptographer
 		//generating a salt
 	  SecretKeyFactory	secret_key_factory=SecretKeyFactory.getInstance("PBKDF2withHmacSHA1");
 		PBEKeySpec spec=new PBEKeySpec(master_password.toCharArray(),salt,20000,512);
-		
 		byte hash[]=secret_key_factory.generateSecret(spec).getEncoded();
 	    return Hex.encodeHexString(hash)+":"+Hex.encodeHexString(salt);			
 		}

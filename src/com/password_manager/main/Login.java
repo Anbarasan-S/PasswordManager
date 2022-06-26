@@ -30,9 +30,14 @@ public class Login
         	}
         	System.out.println("Enter your master password: ");
         	master_password=sc.nextLine();
-        	user=userDao.verifyHashedPassword(master_password,user_name);
+        	String msg[]= {""};
+        	user=userDao.verifyHashedPassword(master_password,user_name,msg);
         	while(user==null)
         	{
+        		if(msg[0].equals("inactive"))
+            	{
+            		return null;
+            	}
         		System.out.println("Invalid master password!! ");
         		System.out.println("Re-enter your master password or press enter to go to main menu: ");
         		master_password=sc.nextLine();
@@ -40,7 +45,8 @@ public class Login
         		{
         			return null;
         		}
-        		user=userDao.verifyHashedPassword(master_password, user_name);
+        		msg[0]="";
+        		user=userDao.verifyHashedPassword(master_password, user_name,msg);
         	}
            return user;
         }

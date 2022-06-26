@@ -1,20 +1,17 @@
 package com.password_manager.dao;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.commons.codec.binary.Hex;
 
 import com.password_maanger.cryptographer.Cryptographer;
-import com.password_manager.Password.Password;
 import com.password_manager.email.EmailServer;
-import com.password_manager.main.MethodKeeper;
 import com.password_manager.main.Client;
+import com.password_manager.main.MethodKeeper;
 import com.password_manager.organisation.Organisation;
 import com.password_manager.user.User;
 
@@ -139,7 +136,6 @@ public class UserDAO
 		ps.setString(5,user.getPublic_key());
 		ps.executeUpdate();
 		
-		//getting the user id and setting it to the user
 		query="SELECT last_insert_id()";
 		ps=con.prepareStatement(query);
 	  ResultSet rs=ps.executeQuery();
@@ -164,7 +160,7 @@ public class UserDAO
 		try
 		{
 			ArrayList<User> users=new ArrayList<User>();
-			query="SELECT* FROM User where org_id=? and NOT user_id=?";
+			query="SELECT* FROM User where org_id=? and NOT user_id=? and NOT user_role=1";
 			ps=con.prepareStatement(query);			
 			ps.setInt(1, org_id);
 			ps.setInt(2, user_id);
@@ -195,7 +191,7 @@ public class UserDAO
 	{
 		try
 		{
-		query="SELECT * FROM User where email=?";
+		query="SELECT * FROM User where email=? LIMIT 1";
 		ps=con.prepareStatement(query);
 		ps.setString(1,user_name.toLowerCase());
 		ResultSet rs=ps.executeQuery();
@@ -400,7 +396,7 @@ public class UserDAO
 		}
 	}
 	
-	public User verifyHashedPassword(String original_password,String user_name)
+	public User verifyHashedPassword(String original_password,String user_name,String msg[])
 	{
 		try
 		{
@@ -423,12 +419,12 @@ public class UserDAO
 			user_id=rs.getInt("user_id");
 			String status=rs.getString("status");
 			String public_key=rs.getString("public_key");
-			String private_key=rs.getString("private_key");
 			
 			
-			if(status=="inactive")
+			if(status.equals("inactive"))
 			{
 				System.out.println("Your account is inactive and you can't login.");
+				msg[0]="inactive";
 				return null;
 			}
 			
@@ -560,6 +556,52 @@ public class UserDAO
 			return null;
 		}	
 	}
+	
+	public ArrayList<User> getTeamMembers(int team_id)
+	{
+		query="SELECT email,user_id,is_team_admin from User where team_id=?";
+		try
+		{
+			ArrayList<User>team_members=new ArrayList<>();
+			ps=con.prepareStatement(query);
+			ps.setInt(1, team_id);
+			ResultSet rs=ps.executeQuery();
+			while(rs.next())
+			{
+				User new_user=new User();
+//				new_user.setTeam_id(rs.getInt("team_id"));
+				new_user.setUser_id(rs.getInt("user_id"));
+				new_user.setUser_name(rs.getString("email"));
+				new_user.setIs_team_admin(rs.getInt("is_team_admin"));
+				team_members.add(new_user);
+			}
+			return team_members;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in the getTeamMembers method of userdao "+ex.getMessage());
+			return null;
+		}
+	}
+	
+	public boolean editTeamRole(int user_id,int status)
+	{
+		query="UPDATE User set is_team_admin=? where user_id=?";
+		try
+		{
+			ps=con.prepareStatement(query);			
+			ps.setInt(1,status);
+			ps.setInt(2, user_id);
+			ps.executeUpdate();
+			return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in the edit team role method of user dao "+ex.getMessage());
+			return false;
+		}
+	}
+	
 	
 	
 }

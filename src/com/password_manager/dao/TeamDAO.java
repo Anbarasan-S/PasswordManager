@@ -3,9 +3,12 @@ package com.password_manager.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.password_maanger.team.Team;
+import com.password_manager.user.User;
 
 public class TeamDAO 
 {
@@ -74,11 +77,6 @@ public class TeamDAO
 		try
 		{
 			con.setAutoCommit(false);
-			query="INSERT INTO TeamMember(team_member_id,team_id) VALUES(?,?)";
-			ps=con.prepareStatement(query);
-			ps.setInt(1, user_id);
-			ps.setInt(2, team_id);
-			ps.executeUpdate();
 
 			if(role==1)
 			{
@@ -132,5 +130,26 @@ public class TeamDAO
 			return null;
 		}
 	}
+	
+	
+	public boolean removeUserFromTeam(int user_id)
+	{
+		query="UPDATE User set team_id=? where user_id=?";
+		try
+		{
+			ps=con.prepareStatement(query);
+			ps.setNull(1,Types.NULL);
+			ps.setInt(2, user_id);
+			ps.executeUpdate();
+			return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in remove user from team method "+ex.getMessage());
+			return false;
+		}
+	}
+	
+	
 
 }
