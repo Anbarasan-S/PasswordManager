@@ -7,7 +7,7 @@ import com.password_manager.main.Client;
 
 public class Password 
 {	
-	private int pass_id,user_id,changed_by_id,owner_pass_id;
+	private int pass_id,user_id,changed_by_id,owner_pass_id,permission_role;
 	private String site_name,site_url,site_password,site_user_name;
 	private Timestamp created_at,last_changed;
 	
@@ -29,7 +29,10 @@ public class Password
 	public void setSite_url(String site_url) {
 		this.site_url = site_url;
 	}
-
+	public void setPermissionRole(int permission_role)
+	{
+		this.permission_role=permission_role;
+	}
 	
 	
 	public void setSite_password(String site_password,int mode)
@@ -49,6 +52,18 @@ public class Password
 		catch(Exception ex)
 		{
 			System.out.println("Exception in set site password "+ex.getMessage());
+		}
+	}
+	
+	public void setSite_password(String public_key,String site_password)
+	{
+		try
+		{
+			this.site_password=new Cryptographer().ecEncryptWithPublicKey(public_key,site_password);				
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in set site password method of shared password "+ex.getMessage());
 		}
 	}
 
@@ -96,5 +111,9 @@ public class Password
 	}
 	public Timestamp getLast_changed() {
 		return last_changed;
+	}
+	public int getPermissionRole()
+	{
+		return this.permission_role;
 	}
 }

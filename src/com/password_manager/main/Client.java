@@ -131,10 +131,10 @@ private static void commonMenuHandler(String data)
 		TeamOperationHandler toh=new TeamOperationHandler();
 		toh.showTeam();
 	}
-	else if(data.equals("share password"))
+	else if(data.equals("transfer ownership"))
 	{
-		TeamOperationHandler toh=new TeamOperationHandler();
-		toh.sharePassword();		
+		UserOperationHandler uoh=new UserOperationHandler();
+		uoh.transferSuperAdminOwnership();
 	}
 }
 
@@ -147,15 +147,16 @@ private static void showPassword()
 	public static void mainMenu()
 	{
 		//For super-admin
-	
+		System.out.println("		Main Menu \n");
 		System.out.println("Select any of these options: ");
 			int option;
 				while(true&&user.getRole()==1)
 				{
 					
-					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"create team",9,"show team",10,"share password"));
+					Map<Integer,String>opt_map=new HashMap<>(Map.of(1,"add password",2,"show password",3,"show trash",4,"change master password",5,"add user",6,"remove user",7,"edit user role",8,"create team",9,"show team"));
+					opt_map.put(10, "transfer ownership");
 					opt_map.put(11,"logout");
-					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Create Team \n9.Show team \n10.Share password \n11.Logout");
+					option=MethodKeeper.receiveIntegerInput("\n1.Add password \n2.Show password  \n3.Show Trash \n4.Change Master Password \n5.Add user \n6.Remove user \n7.Edit user role \n8.Create Team \n9.Show team\n10.Transfer Super Admin Ownership \n11.Logout");
 					
 					if(!opt_map.containsKey(option))
 					{
@@ -255,6 +256,11 @@ private static void showTrash()
 					break;
 				}
 			}
+		}
+		
+		if(user!=null)
+		{
+			mainMenu();
 		}
 	}
 	

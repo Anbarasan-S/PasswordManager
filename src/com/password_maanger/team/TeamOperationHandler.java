@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.password_manager.Password.Password;
 import com.password_manager.dao.TeamDAO;
 import com.password_manager.dao.UserDAO;
 import com.password_manager.main.Client;
@@ -355,92 +356,11 @@ public class TeamOperationHandler
 		
 		for(User team_member:team_members)
 		{
-			System.out.println("  "+ind+".) Name: "+team_member.getUser_name());
+			System.out.println("  "+ind+".) Name: "+team_member.getUser_name()+"  Role: "+MethodKeeper.getRoleAsString(team_member.getRole()));
 			ind++;
 		}
 		System.out.println((ind)+".) "+MethodKeeper.printBlock("Go back"));
 		
 		return team_members;
-	}
-	
-	public void sharePassword()
-	{
-		int choice=MethodKeeper.receiveIntegerInput("  1.) Share password with the team\n  2.) Share password individually ");
-		if(choice==1)
-		{
-			while(true)
-			{
-				List<Team>teams=showTeamOverview();
-				int opt=MethodKeeper.receiveIntegerInput("Select any of the teams from the above list: ");
-				if(opt==teams.size()+1)
-				{
-					break;
-				}			
-				
-				if(opt<=0||opt>teams.size())
-				{
-					System.out.println("Invalid input!!");
-				}
-				else
-				{
-					Scanner sc=new Scanner(System.in);
-					Team team=teams.get(opt-1);
-					outerloop:
-					while(true)
-					{
-					List<User>team_members=showTeamMember(team.getTeam_id(),team.getTeam_name());
-					System.out.println("For multiple user seperate the user with spaces Example(1 2 3 4): ");
-					String user_inputs[]=sc.nextLine().split(" ");
-					
-					if(user_inputs.length==1&&user_inputs[0].trim().equals(String.valueOf(team_members.size()+1)))
-					{
-						break;
-					}
-					
-					boolean check=false;
-					List<User>selected_users=new ArrayList<>();
-					for(int ind=0;ind<user_inputs.length;ind++)
-					{
-						try
-						{
-							int numb=Integer.parseInt(user_inputs[ind]);
-							if(numb>team_members.size()||numb<=0)
-							{
-								throw  new Exception("");
-							}
-							selected_users.add(team_members.get(numb-1));
-						}
-						catch(Exception ex)
-						{
-							System.out.println("Your input contains some invalid values!!");
-							check=!check;
-							break;
-						}
-					}
-					if(!check)
-					{
-						System.out.println("Share the password with the selected team members ");
-						int inx=1;
-						
-						for(User user:selected_users)
-						{
-							System.out.println("  "+inx+".) "+user.getUser_name());
-						}
-						
-						int inp=MethodKeeper.receiveIntegerInput("1.) Yes\n2.)Cancel");
-						if(inp==1)
-						{
-							TeamDAO team_dao=new TeamDAO();
-//							team_dao.sharePassword(selected_users);      
-						}
-					}
-				 }
-				}
-			}
-		}
-		else if(choice==2)
-		{
-		
-		}
 	}
 }

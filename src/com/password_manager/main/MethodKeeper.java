@@ -76,10 +76,10 @@ public class MethodKeeper
 		}
 	}
 	
-	public static String getRoleAsString(int role_enum)
+	public static String getRoleAsString(int role)
 	{
 		String roles[]= {"","Super-Admin","Admin","Team-Admin","Employee","User"};
-		return roles[role_enum];
+		return roles[role];
 	}
 	
 	public static Password receivePasswordDetails(User user)

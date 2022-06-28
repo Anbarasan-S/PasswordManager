@@ -559,7 +559,7 @@ public class UserDAO
 	
 	public ArrayList<User> getTeamMembers(int team_id)
 	{
-		query="SELECT email,user_id,is_team_admin from User where team_id=?";
+		query="SELECT * from User where team_id=?";
 		try
 		{
 			ArrayList<User>team_members=new ArrayList<>();
@@ -572,7 +572,9 @@ public class UserDAO
 //				new_user.setTeam_id(rs.getInt("team_id"));
 				new_user.setUser_id(rs.getInt("user_id"));
 				new_user.setUser_name(rs.getString("email"));
+				new_user.setRole(MethodKeeper.getRole(rs.getString("user_role")));
 				new_user.setIs_team_admin(rs.getInt("is_team_admin"));
+				new_user.setPublic_key(rs.getString("public_key"));
 				team_members.add(new_user);
 			}
 			return team_members;
@@ -598,6 +600,33 @@ public class UserDAO
 		catch(Exception ex)
 		{
 			System.out.println("Exception in the edit team role method of user dao "+ex.getMessage());
+			return false;
+		}
+	}
+	
+	
+	public boolean transferSuperAdminOwnership(int curr_user_id,int receiver_id,int org_id)
+	{
+		try
+		{
+			con.setAutoCommit(false);
+			query="UPDATE User set user_role=4 where user_id=? and org_id=?";
+			ps=con.prepareStatement(query);
+			ps.setInt(1,curr_user_id);
+			ps.setInt(2,org_id);
+			ps.executeUpdate();
+			query="UPDATE User set user_role=1 where user_id=? and org_id=?";
+			ps=con.prepareStatement(query);
+			ps.setInt(1, receiver_id);
+			ps.setInt(2, org_id);
+			ps.executeUpdate();
+			con.commit();
+			con.setAutoCommit(true);
+			return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in transferSuperAdminOwnership method of user dao "+ex.getMessage());
 			return false;
 		}
 	}

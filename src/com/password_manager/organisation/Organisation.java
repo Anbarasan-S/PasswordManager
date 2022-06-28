@@ -2,15 +2,15 @@ package com.password_manager.organisation;
 
 public class Organisation 
 {
-	private int org_id,status_enum;
+	private int org_id,status;
 	private String org_name;
 	public void setOrgId(int org_id)
 	{
 		this.org_id=org_id;
 	}
-	public void setStatusEnum(int status_enum)
+	public void setStatusEnum(int status)
 	{
-		this.status_enum=status_enum;
+		this.status=status;
 	}
 	public void setOrgName(String org_name)
 	{
@@ -23,7 +23,7 @@ public class Organisation
 	}
 	public int getStatusEnum()
 	{
-		return this.status_enum;
+		return this.status;
 	}
 	public String getOrgName()
 	{

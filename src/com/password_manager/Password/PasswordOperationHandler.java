@@ -10,7 +10,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
+import com.password_maanger.team.Team;
+import com.password_maanger.team.TeamOperationHandler;
 import com.password_manager.dao.PasswordDAO;
+import com.password_manager.dao.TeamDAO;
 import com.password_manager.dao.UserDAO;
 import com.password_manager.main.Client;
 import com.password_manager.main.MethodKeeper;
@@ -215,9 +218,11 @@ public class PasswordOperationHandler
 	{
 		pass_dao=new PasswordDAO();
 		int user_id=user.getUser_id();
+		
 		while(true)
 		{
 		ArrayList<Password>details=showPasswordOverview(user_id,1);
+		
 		if(details==null)
 		{
 			System.out.println("Oops! it looks like you don't have any passwords. Try adding some passwords");	
@@ -234,21 +239,25 @@ public class PasswordOperationHandler
 		}
 		else
 		{
-			
 			System.out.println((details.size()+1)+".) "+MethodKeeper.printBlock("Go back"));
 			int numb=MethodKeeper.receiveIntegerInput("\n Select any of the option for performing more operations ");
 			if(numb==details.size()+1)
-				break;
+			{
+				break;				
+			}
 			if(details.size()>=numb&&numb>0)
 			 {
 				 Password temp_pass=details.get(numb-1);
 				 while(pass_dao.isActivePassword(temp_pass.getPass_id()))
 				 {
-				 int opt=MethodKeeper.receiveIntegerInput("\nWhat do you wanna do with the selected password "+MethodKeeper.printBlock(temp_pass.getSite_name())+" :\n \n1.)View Password \n2.)Edit Password  \n3.)Delete Password \n4.)Go back");
+				 int opt=MethodKeeper.receiveIntegerInput("\nWhat do you wanna do with the selected password "+MethodKeeper.printBlock(temp_pass.getSite_name())+" :\n \n1.)View Password \n2.)Edit Password  \n3.)Delete Password \n4.)Share Password \n5.)Go back");
 				 if(opt==1)
 				 {
 					 printPassword(temp_pass);
-					 int choice=MethodKeeper.receiveIntegerInput("\n1.)Edit password\n2.)Delete password\n3.)Go back\n");
+					 int choice;
+					 
+					 choice=MethodKeeper.receiveIntegerInput("\n1.)Edit password\n2.)Delete password\n3.)Go back\n4.)Share Password");						 
+					 
 					 if(choice==1)
 					 {
 						 editPassword(temp_pass);
@@ -259,7 +268,11 @@ public class PasswordOperationHandler
 					 }
 					 else if(choice==3)
 					 {
-						 
+						 break;
+					 }
+					 else if(choice==4)
+					 {
+						 sharing(temp_pass);
 					 }
 					 else
 					 {
@@ -276,6 +289,10 @@ public class PasswordOperationHandler
 				 }
 				 else if(opt==4)
 				 {
+					 sharing(temp_pass);
+				 }
+				 else if(opt==5)
+				 {
 					break; 
 				 }
 				 else
@@ -291,6 +308,123 @@ public class PasswordOperationHandler
 		}
 		}
 		}
+	
+	
+	public void sharing(Password temp_pass)
+	{
+		 if(Client.getUser().getRole()==1)
+		 {
+			int opt=MethodKeeper.receiveIntegerInput("  1.)Share password with the team\n  2.)Share password with individuals");
+			
+			 if(opt==1)
+			 {
+				 while(true)
+				 {
+					 TeamOperationHandler toh=new TeamOperationHandler();
+					 List<Team>teams=toh.showTeamOverview();
+					 
+					 if(teams==null||teams.size()==0)
+					 {
+						 while(true)
+						 {
+							int choice=MethodKeeper.receiveIntegerInput("1.)Go back");
+							 if(choice==1)
+							 {
+								 break;
+							 }
+							 else 
+							 {
+								 System.out.println("Invalid input!!");											 }
+						 	 }
+					 }
+					 else 
+					 {
+						 opt=MethodKeeper.receiveIntegerInput("Select any of the option: ");
+						 
+						 if(opt==teams.size()+1)
+						 {
+							 break; 
+						 }
+						 else if(opt<=0||opt>teams.size())
+						 {
+							 System.out.println("Invalid input!!");
+						 }
+						 else
+						 {
+							 Team team=teams.get(opt-1);
+							List<User>team_members=toh.showTeamMember(team.getTeam_id(),team.getTeam_name());
+							System.out.println("The password "+temp_pass.getSite_name()+" will be shared to the above shown users of the team "+MethodKeeper.printBlock(team.getTeam_name())+":");
+							opt=MethodKeeper.receiveIntegerInput("1.)Yes 2.)Cancel");
+							if(opt==1)
+							{
+								sharePassword(temp_pass,team,team_members);
+							}
+							else
+							{
+								continue;
+							}
+						 }										 
+					 }
+					 
+				 }
+			 
+			 }
+		 }
+	}
+	
+	
+	public void sharePassword(Password pass,Team team,List<User>selected_users)
+	{
+
+		List<Password>passwords=new ArrayList<>();
+		for(User user:selected_users) 
+		{
+			boolean check=false;
+			while(!check)
+			{
+				System.out.println("Select a password role for the user: "+user.getUser_name());
+				int choice=MethodKeeper.receiveIntegerInput("  1.)View\n  2.)Edit\n  3.)Manage");
+				
+				Password new_pass=new Password();
+				
+				new_pass.setCreated_at(pass.getCreated_at());
+				new_pass.setSite_name(pass.getSite_name());
+				new_pass.setSite_url(pass.getSite_url());
+				new_pass.setSite_password(user.getPublic_key(),pass.getSite_password(1));
+				new_pass.setLast_changed(pass.getLast_changed());
+				new_pass.setOwner_pass_id(pass.getPass_id());
+				new_pass.setSite_user_name(pass.getSite_user_name());
+				
+				//View
+				if(choice==1)
+				{
+					new_pass.setPermissionRole(1);
+					check=true;
+					passwords.add(new_pass);
+				}
+				//Edit
+				else if(choice==2)
+				{
+					new_pass.setPermissionRole(2);
+					check=true;
+					passwords.add(new_pass);
+				}
+				//Manage
+				else if(choice==3)
+				{
+					new_pass.setPermissionRole(3);
+					check=true;
+					passwords.add(new_pass);
+				}
+				else 
+				{
+					System.out.println("Invalid input!!");
+				}
+			}
+		}
+			PasswordDAO pass_dao=new PasswordDAO();
+			pass_dao.sharePassword(passwords);
+	}
 	
 	public void printPassword(Password temp_pass)
 	{

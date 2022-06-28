@@ -240,4 +240,69 @@ public class UserOperationHandler
 		   }
      }
 	   }
+	
+	
+	public void transferSuperAdminOwnership()
+	{
+		
+	while(true)
+	{
+		
+		List<User>org_members=printOrgMembers();
+		if(org_members==null||org_members.size()==0)
+		{
+			while(true)
+			{
+				
+				int choice=MethodKeeper.receiveIntegerInput("1.)Go back");
+				if(choice==1)
+				{
+					return;
+				}
+				else 
+				{
+					System.out.println("Invalid input!!");
+					continue;
+				}
+			}
+		}
+		
+		int choice=MethodKeeper.receiveIntegerInput("Select any of the user from the above available users from your organisation: ");
+		if(org_members.size()+1==choice)
+		{
+			break;
+		}
+		if(choice>org_members.size()||choice<=0)
+		{
+			System.out.println("Invalid input!!");
+			continue;
+		}
+		
+		User selected_user=org_members.get(choice-1);
+		choice=MethodKeeper.receiveIntegerInput("Sure you want to transfer the super-admin ownership with "+selected_user.getUser_name()+" Note:(Transfering ownership will remove you as super-admin and you will be assigned as an employee)"+"\n1.) Yes\n2.) No");
+		
+		if(choice==1)
+		{
+			System.out.println("The selected user "+selected_user.getUser_name()+" is now a super-admin (You are now an user) "+MethodKeeper.getLikeSymbol()+"\n");
+			UserDAO user_dao=new UserDAO();
+			boolean changed=user_dao.transferSuperAdminOwnership(Client.getUser().getUser_id(),selected_user.getUser_id(),Client.getUser().getOrg_id());
+			if(changed)
+			{
+				Client.getUser().setRole(4);
+				Client.mainMenu();
+				break;
+			}
+		}
+		else if(choice==2)
+		{
+			break;
+		}
+		else
+		{
+			System.out.println("Invalid input!!");
+		}
+		
+	}
+	
+	}
 }

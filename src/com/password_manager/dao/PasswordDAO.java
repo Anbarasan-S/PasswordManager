@@ -34,14 +34,13 @@ public class PasswordDAO
 		
 		//Encrypt the password password mode=0
 		int user_id=user.getUser_id();
-		query="Insert into Password(user_id,site_name,site_user_name,site_password,site_url,is_own) VALUES(?,?,?,?,?,?)";
+		query="Insert into Password(user_id,site_name,site_user_name,site_password,site_url) VALUES(?,?,?,?,?,)";
 		ps=con.prepareStatement(query);
 		ps.setInt(1,user_id);
 		ps.setString(2, site_name);
 		ps.setString(3, site_username);
 		ps.setString(4,site_password);
 		ps.setString(5, site_url);
-		ps.setInt(6,1);
 		ps.executeUpdate();
 		return true;
 		}
@@ -125,10 +124,10 @@ public class PasswordDAO
 	public ArrayList<Password> showPassword(int status) throws Exception
 	{
 		int user_id=Client.getUser().getUser_id();
-		query="SELECT* from Password where user_id=? and status=? order by is_own DESC";
+		query="SELECT* from Password where user_id=? and status=?";
 		ps=con.prepareStatement(query);
 		ps.setInt(1,user_id);
-		ps.setInt(2,status);
+		ps.setInt(2,status);     
 		ResultSet rs=ps.executeQuery();
 		ArrayList<Password> lst_password=new ArrayList<>();
 		while(rs.next())
@@ -194,4 +193,37 @@ public class PasswordDAO
 		
 	
 	
+	public boolean sharePassword(List<Password>passwords)
+	{
+		try
+		{
+			con.setAutoCommit(false);
+			query="INSERT INTO Password(pass_id,user_id,site_name,site_url,site_password,created_at,last_changed,changed_by_id,owner_pass_id,site_user_name,status,permission_role) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+			for(Password pass:passwords)
+			{
+				ps=con.prepareStatement(query);
+				ps.setInt(1, pass.getPass_id());
+				ps.setInt(2, pass.getUser_id());
+				ps.setString(3, pass.getSite_name());
+				ps.setString(4, pass.getSite_url());
+				ps.setString(5,pass.getSite_password(0));
+				ps.setTimestamp(6,pass.getCreated_at());
+				ps.setTimestamp(7, pass.getLast_changed());
+				ps.setInt(8, pass.getChanged_by_id());
+				ps.setInt(9,pass.getOwner_pass_id());
+				ps.setString(10,pass.getSite_user_name());
+				ps.setInt(11, 1);
+				ps.setInt(12, pass.getPermissionRole());
+				ps.executeUpdate();
+			}			
+			con.commit();
+			con.setAutoCommit(true);
+			return true;
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Exception in the share password method of password dao "+ex.getMessage());
+			return false;
+		}
+	}
 }
